@@ -1,2 +1,3 @@
 # barbershop
-just for study
+Front-End Tec: Vue Js
+Back-End Tec: Sanic python framework
