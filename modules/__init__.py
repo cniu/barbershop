@@ -3,7 +3,12 @@
 from sanic import Sanic
 
 app = Sanic()
-app.static('/static', './static')
+
+from sanic_auth import Auth
+
+app.config.AUTH_LOGIN_ENDPOINT = 'login'
+auth = Auth(app)
 
 from modules import authorized
 from modules import views
+from modules import login
