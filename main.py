@@ -2,7 +2,7 @@
 
 from modules import app, auth
 from sanic import response
-from sanic_mysql import SanicMysql
+from modules.sanic_mysql import SanicMysql
 
 from config import db_settings
 

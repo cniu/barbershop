@@ -1,9 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>登陆页面</title>
+    <meta charset="utf-8">
+    <title>登陆页面</title>
+    <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview/dist/styles/iview.css">
+    <script type="text/javascript" src="http://vuejs.org/js/vue.min.js"></script>
+    <script type="text/javascript" src="http://unpkg.com/iview/dist/iview.min.js"></script>
 </head>
 <body>
-
+	<div id="app">
+	    <i-form ref="formInline" :model="formInline" :rules="ruleInline" inline>
+	        <form-item prop="user">
+	            <i-input type="text" v-model="formInline.user" placeholder="Username">
+	                <icon type="ios-person-outline" slot="prepend"></icon>
+	            </i-input>
+	        </form-item>
+	        <form-item prop="password">
+	            <i-input type="password" v-model="formInline.password" placeholder="Password">
+	                <icon type="ios-lock-outline" slot="prepend"></icon>
+	            </i-input>
+	        </form-item>
+	        <form-item>
+	            <i-button type="primary" @click="handleSubmit('formInline')">Signin</i-button>
+	        </form-item>
+	    </i-form>
+	</div>
 </body>
+<script> 
+    var Main = {
+        data () {
+            return {
+                formInline: {
+                    user: '',
+                    password: ''
+                },
+                ruleInline: {
+                    user: [
+                        { required: true, message: 'Please fill in the user name', trigger: 'blur' }
+                    ],
+                    password: [
+                        { required: true, message: 'Please fill in the password.', trigger: 'blur' },
+                        { type: 'string', min: 6, message: 'The password length cannot be less than 6 bits', trigger: 'blur' }
+                    ]
+                }
+            }
+        },
+        methods: {
+            handleSubmit(name) {
+                this.$refs[name].validate((valid) => {
+                    if (valid) {
+                        this.$Message.success('Success!');
+                    } else {
+                        this.$Message.error('Fail!');
+                    }
+                })
+            }
+        }
+    }
+
+var Component = Vue.extend(Main)
+new Component().$mount('#app')
+</script>
 </html>
