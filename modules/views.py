@@ -9,7 +9,7 @@ from modules.login import handle_no_auth
 
 
 @app.route("/")
-@auth.login_required(handle_no_auth=handle_no_auth)
+# @auth.login_required(handle_no_auth=handle_no_auth)
 async def index(request):
     return response.redirect('/index.html')
 
