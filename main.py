@@ -6,7 +6,7 @@ from modules.sanic_mysql import SanicMysql
 
 from config import db_settings
 
-app.static('/', './web/')
+app.static('/', './front-end/')
 
 @app.route("/test_api")
 async def test(request):

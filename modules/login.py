@@ -2,6 +2,7 @@
 
 from sanic import response
 from sanic_auth import User
+from sanic.log import logger
 
 from modules import app, auth
 
@@ -19,10 +20,10 @@ async def login(request):
         page_level = request.json.get('page_level', '1')
         login_sql = 'select * from account_list where username = "%s" and password = "%s" and page_level = "%s"' % (username, password, page_level)
         account = await request.app.mysql.query_select(login_sql)
-        print()
         if len(account) != 0:
             user = User(account[0][0], username)
             auth.login_user(request, user)
+            logger.info("User %s login successfully!")
             return response.json({"status": "success"})
     return response.json({"status": "failed"})
 
