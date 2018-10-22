@@ -17,32 +17,33 @@
 <script>
 import LoginForm from '@/components/login-form'
 const baseAPIUrl = process.env.baseAPIUrl;
-const headers = {
-    'Content-Type': 'application/json;charset=utf-8'
-  };
 export default {
   name: "Login",
   components: {
     LoginForm
+  },
+  data () {
+    return {
+    }
   },
   methods: {
     handleSubmit ({ userName, password }) {
       this.$http.post(baseAPIUrl + "login",{
           "username": userName, 
           "password": password
-      }, {headers: headers}).then(function(data, status){
-        console.log(data);
-        this.$router.push({
-          name: "home"
-        })
+      }).then(response => {
+          this.$Message.success('登陆成功，欢迎' + userName);
+          this.$router.push({
+            name: "index"
+          });
+        }, response => {
+          const config = {
+            title: "登陆失败",
+            content: "请确认账号密码",
+            width: "300px"
+          };
+          this.$Modal.error(config);
       });
-      // this.handleLogin({ userName, password }).then(res => {
-      //   this.getUserInfo().then(res => {
-      //     this.$router.push({
-      //       name: this.$config.homeName
-      //     })
-      //   })
-      // })
     }
   }
 }

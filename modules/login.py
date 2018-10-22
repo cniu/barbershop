@@ -23,9 +23,9 @@ async def login(request):
         if len(account) != 0:
             user = User(account[0][0], username)
             auth.login_user(request, user)
-            logger.info("User %s login successfully!")
-            return response.json({"status": "success"})
-    return response.json({"status": "failed"})
+            logger.info("User %s login successfully!" % username)
+            return response.json({"message": "Login success!"}, status=200)
+    return response.json({"message": "Login failed!"}, status=401)
 
 @app.route('/logout')
 @auth.login_required
