@@ -17,3 +17,4 @@ from modules import authorized
 from modules import views
 from modules import login
 from modules import exceptions
+from modules import front_setting

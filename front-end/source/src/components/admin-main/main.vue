@@ -97,6 +97,7 @@
                         <div style="margin-right:20px">
                             <!-- <Button type="text" icon="person" size="large">个人中心</Button>
                             <Button type="text" icon="android-notifications" size="large" @click="clickNotice">消息通知</Button> -->
+                            <span style="font-size:12px;">欢迎{{current_user}}</span>
                             <Button type="text" icon="android-exit" size="large" @click="quit">退出系统</Button>
                         </div>
                     </div>     
@@ -139,119 +140,38 @@
 </template>
 <script>
 import {mapActions,mapState} from 'vuex'
-
+const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "Main",
     data(){
-        return{
-            logo:`${this.$qiniuFileUrl}${process.env.LOGO}`,
+        return {
+            logo: '',
             isCollapsed: false,
-            // ------------------------------  菜单操作开始  --------------------------------
-            title:'首页',
-            activeMenuName:'admin',
-            openMenuName:[],
-            menus:[
-                {
-                    title:'首页',
-                    num:1,
-                    name:'admin',
-                    icon:'home',
-                    href:'/admin',
-                    closable:false,
-                    showInTags:true,
-                    showInMenus:true,
-                    choosed:true,
-                },
-                {
-                    title:'课程管理',
-                    name:'course-manage',
-                    icon:'ios-bookmarks',
-                    href:'/admin/course',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:true,
-                    choosed:false,
-                },
-                {
-                    title:'老师管理',
-                    name:'teacher-manage',
-                    icon:'person-stalker',
-                    href:'/admin/teacher',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:true,
-                    choosed:false,
-                },               
-                {
-                    title:'学生管理',
-                    name:'student-manage',
-                    icon:'university',
-                    href:'/admin/student',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:true,
-                    choosed:false,
-                },
-                {
-                    title:'课堂',
-                    name:'class-manage-parent',
-                    icon:'easel',
-                    children:[
-                        {
-                            title:'课堂管理',
-                            name:'classroom-manage',
-                            icon:'erlenmeyer-flask',
-                            href:'/admin/classroom',
-                            closable:true,
-                            showInTags:false,
-                            showInMenus:true,
-                            choosed:false,
-                        },
-                        {
-                            title:'上课管理',
-                            name:'class-manage',
-                            icon:'android-time',
-                            href:'/admin/class',
-                            closable:true,
-                            showInTags:false,
-                            showInMenus:true,
-                            choosed:false,
-                        }
-                    ]
-                },
-                {
-                    title:'APK管理',
-                    name:'apk-manage',
-                    icon:'social-android',
-                    href:'/admin/apk',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:true,
-                    choosed:false,
-                },
-                {
-                    title:'设置',
-                    name:'setting',
-                    icon:'gear-a',
-                    href:'/admin/setting',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:true,
-                    choosed:false,
-                },
-                {
-                    title:'消息通知',
-                    name:'notice',
-                    icon:'ios-navigate',
-                    href:'/notice',
-                    closable:true,
-                    showInTags:false,
-                    showInMenus:false,
-                    choosed:false,
-                }
-            ]
-            // ------------------------------  菜单操作结束  --------------------------------   
+            title: "首页",
+            activeMenuName: "dashboard",
+            openMenuName: [],
+            current_user: "",
+            menus: []
         }
+    },
+    created: function() {
+        this.$http.get(baseAPIUrl + "main_menu").then(response => {
+            this.menus = response.data;
+        }, response => {
+          this.$Message.error('请登陆');
+          this.$router.push({
+            name: "login"
+          });
+          return
+        });
+        this.logo = '@/assets/images/logo.png';
+        this.$http.get(baseAPIUrl + "api/user").then(response => {
+            this.current_user = response.data["name"];
+        }, response => {
+          this.$router.push({
+            name: "login"
+          });
+        });
     },
     computed: {
         // ...mapState(
@@ -345,10 +265,14 @@ export default {
         //     'logout'
         // ]),
         quit(){
-            this.logout();
-            localStorage.removeItem('token');
-            localStorage.removeItem('activeMenuName');
-            this.$router.push('/login')
+            this.$http.get(baseAPIUrl + "logout").then(response => {
+                this.$Message.success('退出成功！' + response.data.message);
+              this.$router.push({
+                name: "login"
+              });
+            }, response => {
+              // this.$Message.error('请登陆');
+            });
         },
         clickNotice(){
             this.choosedMenu('notice');

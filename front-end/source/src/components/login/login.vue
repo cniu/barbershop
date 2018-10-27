@@ -34,7 +34,7 @@ export default {
       }).then(response => {
           this.$Message.success('登陆成功，欢迎' + userName);
           this.$router.push({
-            name: "index"
+            name: "dashboard"
           });
         }, response => {
           const config = {

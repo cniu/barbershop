@@ -31,10 +31,10 @@ async def login(request):
 @auth.login_required
 async def logout(request):
     auth.logout_user(request)
-    return response.redirect('/login.html')
+    return response.json({"message": "Logout success."})
 
 def handle_no_auth(request):
-    return response.redirect('/login.html')
+    return response.json({"message": "Please login first!"}, status=401)
 
 @app.route('/api/user')
 @auth.login_required(user_keyword='user', handle_no_auth=handle_no_auth)
