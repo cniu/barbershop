@@ -7,12 +7,12 @@
         </Row>
         <Row type="flex" justify="start" class="code-row-bg" style="padding: 10px;">
             <Col span="24">
-                <Table border :columns="columns" :data="sell_items_data"></Table>
+                <Table border :columns="columns" :data="sell_items_data" @on-sort-change="sortChange"></Table>
             </Col>
         </Row>
         <Row type="flex" justify="end" class="code-row-bg">
             <Col span="24">
-                <Page :total="entire_data.length" show-total show-sizer :page-size="page_size" :page-size-opts=[2,20,50,100,500] @on-change="changePage" @on-page-size-change="changePageSize" style="float: right;"/>
+                <Page :total="total_count" show-total show-sizer :current="page" :page-size="page_size" :page-size-opts=[20,50,100,500] @on-change="changePage" @on-page-size-change="changePageSize" style="float: right;"/>
             </Col>
         </Row>
     </div>
@@ -26,58 +26,55 @@ const baseAPIUrl = process.env.baseAPIUrl;
                 search: '',
                 page: 1,
                 page_size: 20,
-                entire_data: [
-                    {
-                        raw_id: 1,
-                        name: 'John Brown',
-                        age: 18,
-                        address: 'New York No. 1 Lake Park'
-                    },
-                    {
-                        raw_id: 2,
-                        name: 'Jim Green',
-                        age: 24,
-                        address: 'London No. 1 Lake Park'
-                    },
-                    {
-                        raw_id: 3,
-                        name: 'Joe Black',
-                        age: 30,
-                        address: 'Sydney No. 1 Lake Park'
-                    },
-                    {
-                        raw_id: 4,
-                        name: 'Jon Snow',
-                        age: 26,
-                        address: 'Ottawa No. 2 Lake Park'
-                    }
-                ],
+                total_count: 0,
+                order: "desc",
+                order_key: "created_time",
+                sell_items_data: [],
                 columns: [
                     {
-                        title: 'Name',
-                        key: 'name',
-                        render: (h, params) => {
-                            return h('div', [
-                                h('Icon', {
-                                    props: {
-                                        type: 'person'
-                                    }
-                                }),
-                                h('strong', params.row.name)
-                            ]);
-                        }
+                        title: '编号',
+                        key: 'raw_id',
+                        width: 80
                     },
                     {
-                        title: 'Age',
-                        key: 'age',
-                        sortable: true
+                        title: '单号',
+                        key: 'item_number',
+                        sortable: 'custom'
                     },
                     {
-                        title: 'Address',
-                        key: 'address',
-                        filterRemote(){
-                            console.log(this);
-                        }
+                        title: '发型师',
+                        key: 'hairdresser',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '助理',
+                        key: 'assistant',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '消费类型',
+                        key: 'item_type',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '金额',
+                        key: 'money',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '付款类型',
+                        key: 'pay_type',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '会员',
+                        key: 'fellow',
+                        sortable: 'custom'
+                    },
+                    {
+                        title: '开单时间',
+                        key: 'created_time',
+                        sortable: 'custom'
                     },
                     {
                         title: 'Action',
@@ -99,18 +96,18 @@ const baseAPIUrl = process.env.baseAPIUrl;
                                             this.show(params.index)
                                         }
                                     }
-                                }, 'View'),
-                                h('Button', {
-                                    props: {
-                                        type: 'error',
-                                        size: 'small'
-                                    },
-                                    on: {
-                                        click: () => {
-                                            this.remove(params.index)
-                                        }
-                                    }
-                                }, 'Delete')
+                                }, '编辑'),
+                                // h('Button', {
+                                //     props: {
+                                //         type: 'error',
+                                //         size: 'small'
+                                //     },
+                                //     on: {
+                                //         click: () => {
+                                //             this.remove(params.index)
+                                //         }
+                                //     }
+                                // }, '删除')
                             ]);
                         }
                     }
@@ -118,31 +115,37 @@ const baseAPIUrl = process.env.baseAPIUrl;
             }
         },
         computed: {
-            sell_items_data() {
-                return this.entire_data.filter(item => {
-                    return item.name.indexOf(this.search.toLowerCase()) > -1
-                })
-            }
         },
         created: function() {
             this.getSellItems();
         },
         methods: {
             getSellItems() {
-                // this.$http.get(baseAPIUrl + "sell_items").then(response => {
-                //     this.entire_data = response.data;
-                // }, response => {
-                //     if(response.status == 401){
-                //       this.$Message.error('请登陆');
-                //       this.$router.push({
-                //         name: "login"
-                //       });
-                //     }
-                // });
+                var post_URL = baseAPIUrl + "sell_items?";
+                post_URL += "page=" + this.page;
+                post_URL += "&page_size=" + this.page_size;
+                post_URL += "&order=" + this.order;
+                post_URL += "&order_key=" + this.order_key;
+
+                this.$http.post(post_URL, {search: this.search}).then(response => {
+                    const res = response.data;
+                    this.sell_items_data = res['data'];
+                    this.total_count = res['total_count'];
+                    this.page = res['page'];
+                    if(res['status'] != "success")
+                        this.$Message.error(res['message']);
+                }, response => {
+                    if(response.status == 401){
+                      this.$Message.error('请登陆');
+                      this.$router.push({
+                        name: "login"
+                      });
+                    }
+                });
             },
             handleSearch(value) {
-                
-                // this.sell_items_data = this.entire_data.filter(item => item.indexOf(value) > -1)
+                this.search = value;
+                this.getSellItems();
             },
             show (index) {
                 this.$Modal.info({
@@ -159,6 +162,11 @@ const baseAPIUrl = process.env.baseAPIUrl;
             },
             changePageSize(page_size) {
                 this.page_size = page_size;
+                this.getSellItems();
+            },
+            sortChange(value){
+                this.order = value.order;
+                this.order_key = value.key;
                 this.getSellItems();
             }
         }

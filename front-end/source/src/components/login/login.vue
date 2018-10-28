@@ -26,6 +26,10 @@ export default {
     return {
     }
   },
+  created: function(){
+    if (localStorage.activeMenuName)
+      delete localStorage.activeMenuName
+  },
   methods: {
     handleSubmit ({ userName, password }) {
       this.$http.post(baseAPIUrl + "login",{

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import uuid
+
 from sanic import response
 from modules import app, auth
 from sanic.views import HTTPMethodView
@@ -7,32 +9,53 @@ from sanic.views import HTTPMethodView
 from modules.authorized import authorized
 from modules.login import handle_no_auth
 
-
 @app.route("/")
 # @auth.login_required(handle_no_auth=handle_no_auth)
 async def index(request):
     return response.redirect('/web/index.html')
+
 
 class SellItem(HTTPMethodView):
     decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
     async def get(self, request, item_number):
         data = request.json
-        page = data.get('page', 1)
-        page_size = data.get('page_size', 20)
         sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where item_number = %s' % item_number)
         response_list = []
         for raw_id, value in enumerate(sell_item_list):
             n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
-            response_list.append([
-                raw_id,
-                item_number, hairdresser, assistant, item_type, money, pay_type, fellow, str(
-                    created_time)
-            ])
+            response_list.append({
+                "raw_id": raw_id + 1,
+                "item_number": item_number,
+                "hairdresser": hairdresser,
+                "assistant": assistant,
+                "item_type": item_type,
+                "money": money,
+                "pay_type": pay_type,
+                "fellow": fellow,
+                "created_time": str(created_time),
+            })
         return response.json({"data": response_list})
 
-    def post(self, request):
-        return response.text('I am post method')
+    async def post(self, request, item_number=1):
+        data = request.json
+
+        item_number = str(uuid.uuid4())[:18]
+        hairdresser = data.get('hairdresser', '')
+        assistant = data.get('assistant', '')
+        item_type = data.get('item_type', '')
+        money = data.get('money', 0)
+        pay_type = data.get('pay_type', '现金')
+        fellow = data.get('fellow', '')
+
+        sql = 'insert into sell_item_list (item_number, hairdresser, assistant, item_type, money, pay_type, fellow) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
+            % (item_number, hairdresser, assistant, item_type, money, pay_type, fellow)
+        try:
+            res = await request.app.mysql.query_other(sql)
+        except Exception as e:
+            return response.json({"status": "failed", "message": "开单失败，错误信息为%s" % str(e)})
+
+        return response.json({"status": "success", "message": "开单成功"})
 
     def put(self, request):
         return response.text('I am put method')
@@ -45,23 +68,59 @@ class SellItem(HTTPMethodView):
 
 app.add_route(SellItem.as_view(), '/sell_item/<item_number:int>')
 
-class SellItems(HTTPMethodView):
-    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
-    async def get(self, request):
-        data = request.json
-        sell_item_list = await request.app.mysql.query_select('select * from sell_item_list order by created_time')
-        response_list = []
-        for raw_id, value in enumerate(sell_item_list):
-            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
-            response_list.append([
-                raw_id,
-                item_number, hairdresser, assistant, item_type, money, pay_type, fellow, str(
-                    created_time)
-            ])
-        return response.json({"data": response_list})
+class SellItems(HTTPMethodView):
+    # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+
+    async def post(self, request):
+        data = request.json if request.json is not None else {}
+        args = request.args if request.args is not None else {}
+
+        try:
+            search = data.get('search', '')
+            page = int(args.get('page', 1))
+            page_size = int(args.get('page_size', 20))
+            order_by = args.get('order_key', 'created_time')
+            order = args.get('order', 'desc')
+            if order.lower() not in ['desc', 'asc']:
+                order = 'desc'
+
+            search_sql = "where CONCAT(IFNULL(`item_number`,''),IFNULL(`hairdresser`,''),IFNULL(`assistant`,''),IFNULL(`item_type`,''),IFNULL(`pay_type`,''),IFNULL(`fellow`,'')) LIKE '%%%s%%'" % search
+
+            res_total_count = await request.app.mysql.query_select('select count(*) from sell_item_list %s' % (search_sql))
+            total_count = int(res_total_count[0][0])
+            if total_count <= (page - 1) * page_size:
+                page = 1
+
+            page_sql = "limit %s, %s" % ((page - 1) * page_size, page_size)
+            sell_item_list = await request.app.mysql.query_select('select * from sell_item_list %s order by %s %s %s' % (search_sql, order_by, order, page_sql))
+            response_list = []
+            for raw_id, value in enumerate(sell_item_list):
+                n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
+                response_list.append({
+                    "raw_id": raw_id + 1,
+                    "item_number": item_number,
+                    "hairdresser": hairdresser,
+                    "assistant": assistant,
+                    "item_type": item_type,
+                    "money": money,
+                    "pay_type": pay_type,
+                    "fellow": fellow,
+                    "created_time": str(created_time),
+                })
+        except Exception as e:
+            return response.json({
+                "data": [],
+                "page": 1,
+                "total_count": total_count,
+                "status": "failed",
+                "message": "获取失败，错误信息为%s" % str(e)
+            })
+
+        return response.json({"data": response_list, "page": page, "total_count": int(total_count), "status": "success"})
 
 app.add_route(SellItems.as_view(), '/sell_items/')
+
 
 class Fellows(HTTPMethodView):
     # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
@@ -79,6 +138,7 @@ class Fellows(HTTPMethodView):
         return response.json({"data": response_list})
 
 app.add_route(Fellows.as_view(), '/fellows/')
+
 
 class Fellow(HTTPMethodView):
     decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
@@ -135,7 +195,8 @@ class Fellow(HTTPMethodView):
 
     async def delete(self, request, phone_number):
         data = request.json
-        sql = 'delete from fellow_list where phone_number = "%s"' %s (phone_number)
+        sql = 'delete from fellow_list where phone_number = "%s"' % s(
+            phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -144,7 +205,8 @@ class Fellow(HTTPMethodView):
 
 app.add_route(Fellow.as_view(), '/fellow/<phone_number:int>')
 
-class Fellows(HTTPMethodView):
+
+class Employees(HTTPMethodView):
     # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
     async def get(self, request):
@@ -160,6 +222,7 @@ class Fellows(HTTPMethodView):
         return response.json({"data": response_list})
 
 app.add_route(Fellows.as_view(), '/emplyees/')
+
 
 class Employee(HTTPMethodView):
     decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
@@ -217,7 +280,8 @@ class Employee(HTTPMethodView):
 
     async def delete(self, request, phone_number):
         data = request.json
-        sql = 'delete from fellow_list where phone_number = "%s"' %s (phone_number)
+        sql = 'delete from fellow_list where phone_number = "%s"' % s(
+            phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
