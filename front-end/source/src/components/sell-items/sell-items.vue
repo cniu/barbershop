@@ -19,7 +19,7 @@
             v-model="singleModal" footer-hide
             title="修改单子"
             @on-visible-change="visibleChange">
-            <SingleItem :singleItem="singleItem" @closeModal="closeModal" :hairdresser_list="hairdresser_list" :assistant_list="assistant_list" :fellow_list="fellow_list"></SingleItem>
+            <SingleItem :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal" :hairdresser_list="hairdresser_list" :assistant_list="assistant_list" :fellow_list="fellow_list"></SingleItem>
         </Modal>
     </div>
 </template>
@@ -34,6 +34,7 @@ export default {
     data () {
         return {
             singleItem: {},
+            modal_type: "modify",
             singleModal: false,
             search: '',
             page: 1,
@@ -141,6 +142,7 @@ export default {
     created: function() {
         this.getSellItems();
         this.getEmployees();
+        this.getFellows();
     },
     methods: {
         getSellItems() {
@@ -159,7 +161,7 @@ export default {
                     this.$Message.error(res['message']);
             }, response => {
                 if(response.status == 401){
-                  this.$Message.error('请登陆');
+                  // this.$Message.error('请登陆');
                   this.$router.push({
                     name: "login"
                   });
@@ -173,12 +175,11 @@ export default {
                 const res = response.data;
                 this.hairdresser_list = res['hairdresser_list'];
                 this.assistant_list = res['assistant_list'];
-                console.log(this.hairdresser_list);
                 if(res['status'] != "success")
                     this.$Message.error(res['message']);
             }, response => {
                 if(response.status == 401){
-                  this.$Message.error('请登陆');
+                  // this.$Message.error('请登陆');
                   this.$router.push({
                     name: "login"
                   });
@@ -187,6 +188,21 @@ export default {
 
         },
         getFellows() {
+            var post_URL = baseAPIUrl + "summarized_fellows";
+
+            this.$http.get(post_URL).then(response => {
+                const res = response.data;
+                this.fellow_list = res['response_list'];
+                if(res['status'] != "success")
+                    this.$Message.error(res['message']);
+            }, response => {
+                if(response.status == 401){
+                  // this.$Message.error('请登陆');
+                  this.$router.push({
+                    name: "login"
+                  });
+                }
+            });
 
         },
         handleSearch(value) {
@@ -203,7 +219,6 @@ export default {
             this.singleModal = true;
             this.singleItem = Object.assign({}, this.sell_items_data[index]);
             this.singleItem['item_type'] = this.singleItem['item_type'].split(',');
-            console.log(this.singleItem);
         },
         remove (index) {
             this.sell_items_data.splice(index, 1);
@@ -226,6 +241,7 @@ export default {
         },
         closeModal(text) {
             this.singleModal = false;
+            this.getSellItems();
         }
     }
 }

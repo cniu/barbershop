@@ -1,6 +1,9 @@
 <template>
     <Row>
         <Form ref="singleItem" :model="singleItem" :rules="ruleValidate" :label-width="80">
+            <FormItem label="单号" prop="item" style="display: none;">
+                <Input disabled v-model="singleItem.item_number"></Input>
+            </FormItem>
             <FormItem label="发型师" prop="hairdresser">
                 <Select v-model="singleItem.hairdresser" placeholder="请选择发型师">
                     <Option v-for="(option, index) in hairdresser_list" :value="option.value" :key="index">{{option.label}}</Option>
@@ -32,16 +35,13 @@
             </FormItem>
             <FormItem label="会员" prop="fellow">
                 <Row>
-                    <Col span="13">
-                        <Select
-                            v-model="singleItem.fellow" style="width: 180px;"
-                            filterable>
-                            <Option v-for="(option, index) in fellow_list" :value="option.value" :key="index">{{option.label}}</Option>
+                    <Col span="16">
+                        <Select v-model="singleItem.fellow" style="width: 180px;" filterable>
+                            <Option v-for="(option, index) in fellow_list" :value="option.value" :key="index" >{{option.label}}</Option>
                         </Select>
                     </Col>
-                    <Col span="3">余额：</Col>
-                    <Col span="8">
-                        <Input v-model="fellow_rest" disabled placeholder="0" />
+                    <Col span="8">    
+                        <Button type="primary" size="small" @click="showFellowInfo">查看会员信息</Button>
                     </Col>
                 </Row>                
             </FormItem>
@@ -56,12 +56,14 @@
     </Row>
 </template>
 <script>
+const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "SingleItem",
     props: {
-        hairdresser_list: [],
-        assistant_list: [],
-        fellow_list: [],
+        hairdresser_list: '',
+        assistant_list: '',
+        fellow_list: '',
+        modal_type: '',
         singleItem: {
             hairdresser: '',
             assistant: '',
@@ -69,7 +71,8 @@ export default {
             money: '',
             pay_type: [],
             fellow: '',
-            comment: ''
+            comment: '',
+            item_number: ''
         }
     },
     data() {
@@ -107,11 +110,32 @@ export default {
     },
     methods: {
         handleSubmit (name) {
-            console.log(this.singleItem);
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$emit('closeModal', 'submit');
-                    this.$Message.success('Success!');
+                    if(this.$props.modal_type == "modify"){
+
+                        var post_URL = baseAPIUrl + "sell_item/" + this.singleItem.item_number;
+
+                        this.$http.put(post_URL, this.singleItem).then(response => {
+                            const res = response.data;
+                            if(res['status'] != "success")
+                                this.$Message.error(res['message']);
+
+                            this.$Message.success('修改成功!');
+                            this.$emit('closeModal', 'submit');
+                        }, response => {
+                            if(response.status == 401){
+                              // this.$Message.error('请登陆');
+                              this.$router.push({
+                                name: "login"
+                              });
+                            }
+                        });
+                    }
+                    else if(this.$props.modal_type == "add"){
+                        this.$Message.success('新增成功!');
+                        this.$emit('closeModal', 'submit');
+                    }
                 } else {
                     this.$Message.error('请重新输入!');
                 }
@@ -119,6 +143,18 @@ export default {
         },
         handleReset (name) {
             this.$refs[name].resetFields();
+        },
+        showFellowInfo () {
+            const fellow_info = this.fellow_list.filter(item => item['value'] == this.singleItem.fellow);
+            const content = 
+                '<p>姓名：' + fellow_info[0]['name'] + '</p>' +
+                '<p>卡类型：' + fellow_info[0]['card_type'] + '</p>' +
+                '<p>余额：' + fellow_info[0]['money'] + '</p>' + 
+                '<p>手机号：' + fellow_info[0]['value'] + '</p>';
+            this.$Modal.success({
+                title: "会员信息",
+                content: content
+            });
         },
         getFellowList (query) {
             // if (query !== '') {

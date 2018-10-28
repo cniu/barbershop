@@ -59,8 +59,30 @@ class SellItem(HTTPMethodView):
 
         return response.json({"status": "success", "message": "开单成功"})
 
-    def put(self, request):
-        return response.text('I am put method')
+    async def put(self, request, item_number):
+        data = request.json
+
+        hairdresser = data.get('hairdresser', '')
+        assistant = data.get('assistant', '')
+        item_type = data.get('item_type', [])
+        money = data.get('money', 0)
+        pay_type = data.get('pay_type', '现金')
+        fellow = data.get('fellow', '')
+        comment = data.get('comment', '')
+
+        item_type = ','.join(item_type)
+        money = int(money)
+        sql = 'update sell_item_list set hairdresser = "%s", assistant = "%s", item_type = "%s", money = "%s", pay_type = "%s", fellow = "%s", comment = "%s" \
+            where item_number = "%s"' \
+            % (hairdresser, assistant, item_type, money, pay_type, fellow, comment, item_number)
+        print(sql)
+        try:
+            res = await request.app.mysql.query_other(sql)
+        except Exception as e:
+            print(e)
+            return response.json({"status": "failed", "message": "更新失败，错误信息为%s" % str(e)})
+
+        return response.json({"status": "success", "message": "更新成功"})
 
     def patch(self, request):
         return response.text('I am patch method')
@@ -68,7 +90,7 @@ class SellItem(HTTPMethodView):
     def delete(self, request):
         return response.text('I am delete method')
 
-app.add_route(SellItem.as_view(), '/sell_item/<item_number:int>')
+app.add_route(SellItem.as_view(), '/sell_item/<item_number:string>')
 
 
 class SellItems(HTTPMethodView):
@@ -133,12 +155,17 @@ class Fellows(HTTPMethodView):
         response_list = []
         for raw_id, value in enumerate(fellow_list):
             n_id, name, phone_number, birthday, password, card_type, money, created_by, update_time = value
-            response_list.append([
-                raw_id,
-                name, phone_number, birthday, password, card_type, money, created_by, str(
-                    update_time)
-            ])
-        return response.json({"data": response_list})
+            response_list.append({
+                "raw_id": raw_id + 1,
+                "name": name,
+                "phone_number": phone_number,
+                "birthday": birthday,
+                "card_type": card_type,
+                "money": money,
+                "created_by": created_by,
+                "created_time": str(created_time),
+            })
+        return response.json({"data": response_list, "status": "success"})
 
 app.add_route(Fellows.as_view(), '/fellows/')
 
@@ -314,5 +341,25 @@ async def getEmployeesName(request):
     return response.json({
         "hairdresser_list": hairdresser_list, 
         "assistant_list": assistant_list,
+        "status": "success"
+    })
+
+
+@app.route("/summarized_fellows")
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def getFellowsInfo(request):
+    employee_list = await request.app.mysql.query_select('select name, phone_number, money, card_type from fellow_list')
+    response_list = []
+    for raw_id, value in enumerate(employee_list):
+        name, phone_number, money, card_type = value
+        response_list.append({
+            "value": phone_number,
+            "label": phone_number,
+            "name": name,
+            "money": money,
+            "card_type": card_type
+        })
+    return response.json({
+        "response_list": response_list,
         "status": "success"
     })

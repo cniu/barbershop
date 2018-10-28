@@ -29,7 +29,7 @@ CREATE TABLE `barbershop`.`fellow_list` (
 	`name` VARCHAR(16) NOT NULL,
 	`phone_number` VARCHAR(32) NOT NULL unique,
 	`birthday` VARCHAR(32) NOT NULL,
-    `password` int NOT NULL,
+    `password` VARCHAR(32),
     card_type varchar(20) NOT NULL,
     money int not null,
     created_by varchar(20) not null,
