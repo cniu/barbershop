@@ -8,7 +8,7 @@
             <Sider ref="side1" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed" style="background: rgb(73, 80, 96);">
                 <div class="logo" >
                     <img :src="logo" width="100" v-if="!isCollapsed"/>
-                    <Avatar icon="person" size="large" v-else/>
+                    <Avatar icon="ios-book" size="large" v-else/>
                 </div>
                 <Menu 
                     ref="side_menu"
@@ -91,14 +91,13 @@
                         z-index: 1;
                         box-shadow: 0 2px 1px 1px rgba(100, 100, 100, 0.1);">
                         <div style="display:flex;align-items:center;">
-                            <Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px 0'}" type="navicon-round" size="24"></Icon>
+                            <Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px 0'}" type="ios-menu" size="24"></Icon>
                             <span style="font-size:18px;font-weight:bold">后台管理系统</span>
+                            <span style="font-size:14px;padding-left: 20px;">欢迎光临！ {{current_user}}</span>
                         </div>
                         <div style="margin-right:20px">
-                            <!-- <Button type="text" icon="person" size="large">个人中心</Button>
-                            <Button type="text" icon="android-notifications" size="large" @click="clickNotice">消息通知</Button> -->
-                            <span style="font-size:12px;">欢迎{{current_user}}</span>
-                            <Button type="text" icon="android-exit" size="large" @click="quit">退出系统</Button>
+                            <Button type="text" icon="ios-apps" size="large" @click="enter_functions">进入功能区</Button>
+                            <Button type="text" icon="ios-exit" size="large" @click="quit">退出系统</Button>
                         </div>
                     </div>     
                     <div style="display: flex;
@@ -111,7 +110,7 @@
                         <template v-for="(tab,tab_index) in tags">
                             <Tag type="dot" 
                             :closable="tab.closable" 
-                            :color="tab.choosed ? 'blue':'#e9eaec'"
+                            :color="tab.choosed ? '#00ff00':'#e9eaec'"
                             :name="tab.name"
                             @click.native="clickTag(tab)"
                             @on-close="closeTag" >
@@ -140,6 +139,7 @@
 </template>
 <script>
 import {mapActions,mapState} from 'vuex'
+import w_logo from '@/assets/images/logo.png'
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "Main",
@@ -157,6 +157,45 @@ export default {
     created: function() {
         this.$http.get(baseAPIUrl + "main_menu").then(response => {
             this.menus = response.data;
+
+            let activeMenuName = localStorage.activeMenuName;
+            this.activeMenuName = activeMenuName;
+            var tags_last_num = 1;
+            if(this.tags.length != 0)
+                tags_last_num = this.tags[this.tags.length - 1].num; 
+
+            if(activeMenuName && activeMenuName.length != 0){
+                this.menus.forEach(_menu=>{
+                    if(activeMenuName == _menu.name){                        
+                        _menu.choosed = true;
+                        _menu.showInTags = true;
+                        _menu.num = tags_last_num + 1;
+                    }
+                    else if(_menu.children){
+                        _menu.children.forEach(child=>{
+                            if(activeMenuName == child.name){
+                                child.choosed = true;
+                                child.showInTags = true;
+                                child.num = tags_last_num + 1;
+                                this.openMenuName = [_menu.name];      
+                            }
+                        })                 
+                    }
+                    else{
+                        // 排除首页
+                        if(_menu.name != 'dashboard'){
+                            _menu.choosed = false;
+                            _menu.showInTags = false;
+                        }else{
+                            _menu.choosed = false;
+                        }
+                    }
+                })
+            }
+            this.$nextTick(()=>{
+                this.$refs.side_menu.updateOpened();
+                this.$refs.side_menu.updateActiveName();
+            }); 
         }, response => {
           this.$Message.error('请登陆');
           this.$router.push({
@@ -164,7 +203,7 @@ export default {
           });
           return
         });
-        this.logo = '@/assets/images/logo.png';
+        this.logo = w_logo;
         this.$http.get(baseAPIUrl + "api/user").then(response => {
             this.current_user = response.data["name"];
         }, response => {
@@ -194,8 +233,6 @@ export default {
                     })
                 }
             });
-            console.log('tags=>',tags)
-
             //标签数组排序，从小到到
             tags.sort((a,b)=>{
                 return (a.num - b.num)
@@ -215,58 +252,13 @@ export default {
             ]
         }
     },
-    // ------------------------------  菜单操作开始  --------------------------------
-    //刷新页面之后保存并选中最后一次菜单和标签
-    beforeRouteEnter (to, from, next) {
-        next(vm => {
-            // 通过 `vm` 访问组件实例
-            let activeMenuName = localStorage.activeMenuName;
-            vm.activeMenuName = activeMenuName;
-
-            let tags_last_num = vm.tags[vm.tags.length - 1].num; 
-
-            if(activeMenuName && activeMenuName.length != 0){
-                vm.menus.forEach(_menu=>{
-                    if(activeMenuName == _menu.name){                        
-                        _menu.choosed = true;
-                        _menu.showInTags = true;
-                        _menu.num = tags_last_num + 1;
-                    }
-                    else if(_menu.children){
-                        _menu.children.forEach(child=>{
-                            if(activeMenuName == child.name){
-                                child.choosed = true;
-                                child.showInTags = true;
-                                child.num = tags_last_num + 1;
-                                vm.openMenuName = [_menu.name];      
-                            }
-                        })                 
-                    }
-                    else{
-                        // 排除首页
-                        if(_menu.name != 'admin'){
-                            _menu.choosed = false;
-                            _menu.showInTags = false;
-                        }else{
-                            _menu.choosed = false;
-                        }
-                    }
-                })
-            }
-            vm.$nextTick(()=>{
-                vm.$refs.side_menu.updateOpened();
-                vm.$refs.side_menu.updateActiveName();
-            });           
-        })        
-    },
-    // ------------------------------  菜单操作结束  --------------------------------
     methods: {
         // ...mapActions([
         //     'logout'
         // ]),
         quit(){
             this.$http.get(baseAPIUrl + "logout").then(response => {
-                this.$Message.success('退出成功！' + response.data.message);
+              this.$Message.success('退出成功！' + response.data.message);
               this.$router.push({
                 name: "login"
               });
@@ -274,8 +266,10 @@ export default {
               // this.$Message.error('请登陆');
             });
         },
-        clickNotice(){
-            this.choosedMenu('notice');
+        enter_functions(){
+            this.$router.push({
+                name: "index"
+              });
         },
         collapsedSider() {
             this.$refs.side1.toggleCollapse();

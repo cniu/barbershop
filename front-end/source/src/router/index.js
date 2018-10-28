@@ -19,7 +19,7 @@ export default new Router({
 		path: '/index',
 		name: 'index',
 		meta: {
-		  title: '功能首页',
+		  title: '首页',
 		  hideInMenu: true
 		},
 		component: () => import('@/components/index')
@@ -34,17 +34,53 @@ export default new Router({
 		  notCache: true
 		},
 		children: [
-		  {
-		    path: '/dashboard',
-		    name: 'dashboard',
-		    meta: {
-		      hideInMenu: true,
-		      title: '管理页面',
-		      notCache: true,
-		      icon: 'md-home'
-		    },
-		    component: () => import('@/components/dashboard')
-		  }
+			{
+				path: '/dashboard',
+				name: 'dashboard',
+				meta: {
+				  hideInMenu: true,
+				  title: '管理页面',
+				  notCache: true
+			},
+			component: () => import('@/components/dashboard')
+			},
+			{
+				path: '/sell_items',
+				name: 'sell-items',
+				meta: {
+				  hideInMenu: true,
+				  title: '开单记录',
+				  notCache: true
+			},
+			component: () => import('@/components/sell-items')
+			},
+			{
+				path: '/finance_analysis',
+				name: 'finance_analysis',
+				meta: {
+				  title: '财务分析',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/finance-analysis')
+			},
+			{
+				path: '/account/list',
+				name: 'account-list',
+				meta: {
+				  title: '会员列表',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/account/account-list/')
+			},
+			{
+				path: '/account/consumptions',
+				name: 'account-consumption',
+				meta: {
+				  title: '会员消费记录',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/account/account-consumptions/')
+			}
 		]
 	}
   ]

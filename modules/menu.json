@@ -3,7 +3,7 @@
         "title":"首页",
         "num":1,
         "name":"admin",
-        "icon":"home",
+        "icon":"ios-home",
         "href":"/dashboard",
         "closable":false,
         "showInTags":true,
@@ -11,55 +11,38 @@
         "choosed":true
     },
     {
-        "title":"课程管理",
-        "name":"course-manage",
-        "icon":"ios-bookmarks",
-        "href":"/dashboard/course",
+        "title":"开单记录",
+        "num":2,
+        "name":"sell-items",
+        "icon":"ios-list-box",
+        "href":"/sell_items",
         "closable":true,
         "showInTags":false,
         "showInMenus":true,
         "choosed":false
     },
     {
-        "title":"老师管理",
-        "name":"teacher-manage",
-        "icon":"person-stalker",
-        "href":"/admin/teacher",
-        "closable":true,
-        "showInTags":false,
-        "showInMenus":true,
-        "choosed":false
-    },    
-    {
-        "title":"学生管理",
-        "name":"student-manage",
-        "icon":"university",
-        "href":"/admin/student",
-        "closable":true,
-        "showInTags":false,
-        "showInMenus":true,
-        "choosed":false
-    },
-    {
-        "title":"课堂",
-        "name":"class-manage-parent",
-        "icon":"easel",
+        "title":"会员管理",
+        "name":"account-manage-parent",
+        "icon":"ios-people",
         "children":[
             {
-                "title":"课堂管理",
-                "name":"classroom-manage",
-                "icon":"erlenmeyer-flask",
-                "href":"/admin/classroom",
+                "title":"会员列表",
+                "num":3,
+                "name":"account-manage",
+                "icon":"ios-list",
+                "href":"/account/list",
                 "closable":true,
                 "showInTags":false,
                 "showInMenus":true,
                 "choosed":false
             },
             {
-                "title":"上课管理",
-                "name":"class-manage",
-                "icon":"android-time",
-                "href":"/admin/class",
+                "title":"会员消费记录",
+                "num":4,
+                "name":"account-consumptions",
+                "icon":"ios-list",
+                "href":"/account/consumptions",
                 "closable":true,
                 "showInTags":false,
                 "showInMenus":true,
@@ -68,33 +51,83 @@
         ]
     },
     {
-        "title":"APK管理",
-        "name":"apk-manage",
-        "icon":"social-android",
-        "href":"/admin/apk",
+        "title":"财务分析",
+        "num":5,
+        "name":"finance-analysis",
+        "icon":"ios-speedometer",
+        "href":"/finance_analysis",
         "closable":true,
         "showInTags":false,
         "showInMenus":true,
         "choosed":false
+    },
+    {
+        "title":"员工管理",
+        "name":"employee-manage-parent",
+        "icon":"md-people",
+        "children":[
+            {
+                "title":"员工列表",
+                "num":6,
+                "name":"employee-manage",
+                "icon":"ios-list",
+                "href":"/employee/list",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            },
+            {
+                "title":"员工工资流水",
+                "num":7,
+                "name":"employee-salary",
+                "icon":"ios-list",
+                "href":"/employee/salary_record",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            }
+        ]
     },
     {
         "title":"设置",
-        "name":"setting",
-        "icon":"gear-a",
-        "href":"/admin/setting",
-        "closable":true,
-        "showInTags":false,
-        "showInMenus":true,
-        "choosed":false
-    },
-    {
-        "title":"消息通知",
-        "name":"notice",
-        "icon":"ios-navigate",
-        "href":"/notice",
-        "closable":true,
-        "showInTags":false,
-        "showInMenus":false,
-        "choosed":false
+        "name":"setting-parent",
+        "icon":"md-settings",
+        "children":[
+            {
+                "title":"人员类别管理",
+                "num":8,
+                "name":"employee-type-setting",
+                "icon":"ios-cog",
+                "href":"/setting/employee_type",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            },
+            {
+                "title":"会员卡类型管理",
+                "num":9,
+                "name":"account-type-setting",
+                "icon":"ios-cog",
+                "href":"/setting/account_type",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            },
+            {
+                "title":"登陆权限管理",
+                "num":10,
+                "name":"user-access-manage",
+                "icon":"ios-cog",
+                "href":"/setting/user",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            }
+        ]
     }
 ]

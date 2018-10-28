@@ -16,15 +16,18 @@ async def index(request):
 class SellItem(HTTPMethodView):
     decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
-    async def get(self, request):
-        sell_item_list = await request.app.mysql.query_select('select * from sell_item_list')
+    async def get(self, request, item_number):
+        data = request.json
+        page = data.get('page', 1)
+        page_size = data.get('page_size', 20)
+        sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where item_number = %s' % item_number)
         response_list = []
         for raw_id, value in enumerate(sell_item_list):
-            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, update_time = value
+            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
             response_list.append([
                 raw_id,
                 item_number, hairdresser, assistant, item_type, money, pay_type, fellow, str(
-                    update_time)
+                    created_time)
             ])
         return response.json({"data": response_list})
 
@@ -40,7 +43,25 @@ class SellItem(HTTPMethodView):
     def delete(self, request):
         return response.text('I am delete method')
 
-app.add_route(SellItem.as_view(), '/sell_items')
+app.add_route(SellItem.as_view(), '/sell_item/<item_number:int>')
+
+class SellItems(HTTPMethodView):
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+
+    async def get(self, request):
+        data = request.json
+        sell_item_list = await request.app.mysql.query_select('select * from sell_item_list order by created_time')
+        response_list = []
+        for raw_id, value in enumerate(sell_item_list):
+            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
+            response_list.append([
+                raw_id,
+                item_number, hairdresser, assistant, item_type, money, pay_type, fellow, str(
+                    created_time)
+            ])
+        return response.json({"data": response_list})
+
+app.add_route(SellItems.as_view(), '/sell_items/')
 
 class Fellows(HTTPMethodView):
     # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
