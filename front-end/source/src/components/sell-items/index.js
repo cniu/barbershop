@@ -1,2 +1,3 @@
 import SellItems from './sell-items.vue'
-export default SellItems
+export default SellItems 
+

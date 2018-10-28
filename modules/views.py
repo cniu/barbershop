@@ -23,7 +23,7 @@ class SellItem(HTTPMethodView):
         sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where item_number = %s' % item_number)
         response_list = []
         for raw_id, value in enumerate(sell_item_list):
-            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
+            n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment, created_time = value
             response_list.append({
                 "raw_id": raw_id + 1,
                 "item_number": item_number,
@@ -33,6 +33,7 @@ class SellItem(HTTPMethodView):
                 "money": money,
                 "pay_type": pay_type,
                 "fellow": fellow,
+                "comment": comment,
                 "created_time": str(created_time),
             })
         return response.json({"data": response_list})
@@ -47,9 +48,10 @@ class SellItem(HTTPMethodView):
         money = data.get('money', 0)
         pay_type = data.get('pay_type', '现金')
         fellow = data.get('fellow', '')
+        comment = data.get('comment', '')
 
-        sql = 'insert into sell_item_list (item_number, hairdresser, assistant, item_type, money, pay_type, fellow) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
-            % (item_number, hairdresser, assistant, item_type, money, pay_type, fellow)
+        sql = 'insert into sell_item_list (item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
+            % (item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -70,7 +72,7 @@ app.add_route(SellItem.as_view(), '/sell_item/<item_number:int>')
 
 
 class SellItems(HTTPMethodView):
-    # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
     async def post(self, request):
         data = request.json if request.json is not None else {}
@@ -85,7 +87,7 @@ class SellItems(HTTPMethodView):
             if order.lower() not in ['desc', 'asc']:
                 order = 'desc'
 
-            search_sql = "where CONCAT(IFNULL(`item_number`,''),IFNULL(`hairdresser`,''),IFNULL(`assistant`,''),IFNULL(`item_type`,''),IFNULL(`pay_type`,''),IFNULL(`fellow`,'')) LIKE '%%%s%%'" % search
+            search_sql = "where CONCAT(IFNULL(`item_number`,''),IFNULL(`hairdresser`,''),IFNULL(`assistant`,''),IFNULL(`item_type`,''),IFNULL(`pay_type`,''),IFNULL(`comment`,''),IFNULL(`fellow`,'')) LIKE '%%%s%%'" % search
 
             res_total_count = await request.app.mysql.query_select('select count(*) from sell_item_list %s' % (search_sql))
             total_count = int(res_total_count[0][0])
@@ -96,7 +98,7 @@ class SellItems(HTTPMethodView):
             sell_item_list = await request.app.mysql.query_select('select * from sell_item_list %s order by %s %s %s' % (search_sql, order_by, order, page_sql))
             response_list = []
             for raw_id, value in enumerate(sell_item_list):
-                n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, created_time = value
+                n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment, created_time = value
                 response_list.append({
                     "raw_id": raw_id + 1,
                     "item_number": item_number,
@@ -106,6 +108,7 @@ class SellItems(HTTPMethodView):
                     "money": money,
                     "pay_type": pay_type,
                     "fellow": fellow,
+                    "comment": comment,
                     "created_time": str(created_time),
                 })
         except Exception as e:
@@ -289,3 +292,27 @@ class Employee(HTTPMethodView):
         return response.json({"status": "success", "message": "删除员工成功"})
 
 app.add_route(Fellow.as_view(), '/employee/<phone_number:int>')
+
+
+@app.route("/summarized_employees")
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def getEmployeesName(request):
+    employee_list = await request.app.mysql.query_select('select name, phone_number, emplyee_type from employee_list')
+    hairdresser_list, assistant_list = [], []
+    for raw_id, value in enumerate(employee_list):
+        name, phone_number, emplyee_type = value
+        if emplyee_type == "发型师":
+            hairdresser_list.append({
+                "value": name,
+                "label": name
+            })
+        elif emplyee_type == "助理":
+            assistant_list.append({
+                "value": name,
+                "label": name
+            })
+    return response.json({
+        "hairdresser_list": hairdresser_list, 
+        "assistant_list": assistant_list,
+        "status": "success"
+    })
