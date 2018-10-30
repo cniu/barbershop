@@ -3,16 +3,22 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import iView from 'iview'
 import config from '../config'
-import 'iview/dist/styles/iview.css'
 import '@/assets/icons/iconfont.css'
+
+import 'iview/dist/styles/iview.css'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+
 import VueResource from 'vue-resource';
+import iView from 'iview'
+import BootstrapVue from 'bootstrap-vue'
 
 Vue.config.productionTip = false
 
 Vue.use(iView)
 Vue.use(VueResource);
+Vue.use(BootstrapVue);
 
 /**
  * @description 全局注册应用配置

@@ -17,9 +17,19 @@ DROP TABLE IF EXISTS `barbershop`.`users`;
 CREATE TABLE `barbershop`.`users` (
 	id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`username` VARCHAR(16) NOT NULL,
-	`password` VARCHAR(32) NOT NULL,
+	`password` VARCHAR(10) NOT NULL,
 	`page_level` int NOT NULL,
-	`create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
+DROP TABLE IF EXISTS `barbershop`.`fellow_types`;
+CREATE TABLE `barbershop`.`fellow_types` (
+	id MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`card_type_name` VARCHAR(16) NOT NULL,
+	`discount` VARCHAR(10) NOT NULL,
+	`comment` varchar(200),
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
 
@@ -33,7 +43,7 @@ CREATE TABLE `barbershop`.`fellow_list` (
     card_type varchar(20) NOT NULL,
     money int not null,
     created_by varchar(20) not null,
-	`create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
 
@@ -47,7 +57,7 @@ CREATE TABLE `barbershop`.`employee_list` (
     base_salary varchar(20) NOT NULL,
     percentage varchar(20) not null,
     `status` varchar(20) not null,
-	`create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
 
@@ -60,13 +70,14 @@ CREATE TABLE `barbershop`.`fellow_history_list` (
     remain_money int not null,
     item_number varchar(20),
     reason varchar(20) not null,
-	`create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
   
 insert into `barbershop`.`sell_item_list` (item_number, hairdresser, assistant, item_type, money, pay_type, fellow, `comment`) values ('1010201sd12', '杨', '李', '染发', 200, '刷卡', '13121234589', "备注");
 
 insert into `barbershop`.`users` (`username`, `password`, `page_level`) values ('admin', 'admin', '1');
+insert into `barbershop`.`fellow_types` (`card_type_name`, `discount`, `comment`) values ('7折卡', '0.7', 'discount');
 
 insert into fellow_list (name, phone_number, birthday, password, card_type, money, created_by) values ("Neal", "1937843398", "", "123", "5折卡", "1000", "牛");
 

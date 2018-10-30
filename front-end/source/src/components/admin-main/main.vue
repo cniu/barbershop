@@ -83,7 +83,7 @@
                     }" class="layout-header-bar">
                     <div style="
                         display:flex;
-                        align-tems:center;
+                        align-items:center;
                         justify-content:space-between;
                         position: relative;
                         height:60px;

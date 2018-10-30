@@ -7,7 +7,7 @@
         </Row>
         <Row type="flex" justify="start" class="code-row-bg" style="padding: 10px;">
             <Col span="24">
-                <Table border :columns="columns" :data="sell_items_data" @on-sort-change="sortChange"></Table>
+                <Table border :columns="columns" :data="fellow_type_data" @on-sort-change="sortChange"></Table>
             </Col>
         </Row>
         <Row type="flex" justify="end" class="code-row-bg">
@@ -17,19 +17,19 @@
         </Row>
         <Modal
             v-model="singleModal" footer-hide
-            title="修改单子"
+            title="修改类别"
             @on-visible-change="visibleChange">
-            <SellItem :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal" :hairdresser_list="hairdresser_list" :assistant_list="assistant_list" :fellow_list="fellow_list"></SellItem>
+            <FellowType :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal"></FellowType>
         </Modal>
     </div>
 </template>
 <script>
-import SellItem from './sell-item.vue'
+import FellowType from './sell-item.vue'
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
-    name: "SellItems",
+    name: "FellowTypeManage",
     components: {
-        SellItem
+        FellowType
     },
     data () {
         return {
@@ -42,10 +42,7 @@ export default {
             total_count: 0,
             order: "desc",
             order_key: "created_time",
-            sell_items_data: [],
-            assistant_list: [],
-            hairdresser_list: [],
-            fellow_list: [],
+            fellow_type_data: [],
             columns: [
                 {
                     title: '编号',
@@ -53,38 +50,13 @@ export default {
                     width: 80
                 },
                 {
-                    title: '单号',
-                    key: 'item_number',
+                    title: '会员卡类型名称',
+                    key: 'card_type_name',
                     sortable: 'custom'
                 },
                 {
-                    title: '发型师',
-                    key: 'hairdresser',
-                    sortable: 'custom'
-                },
-                {
-                    title: '助理',
-                    key: 'assistant',
-                    sortable: 'custom'
-                },
-                {
-                    title: '消费类型',
-                    key: 'item_type',
-                    sortable: 'custom'
-                },
-                {
-                    title: '金额',
-                    key: 'money',
-                    sortable: 'custom'
-                },
-                {
-                    title: '付款类型',
-                    key: 'pay_type',
-                    sortable: 'custom'
-                },
-                {
-                    title: '会员',
-                    key: 'fellow',
+                    title: '打折比率',
+                    key: 'discount',
                     sortable: 'custom'
                 },
                 {
@@ -94,7 +66,7 @@ export default {
                     sortable: 'custom'
                 },
                 {
-                    title: '开单时间',
+                    title: '更新时间',
                     key: 'created_time',
                     sortable: 'custom'
                 },
@@ -119,17 +91,17 @@ export default {
                                     }
                                 }
                             }, '编辑'),
-                            // h('Button', {
-                            //     props: {
-                            //         type: 'error',
-                            //         size: 'small'
-                            //     },
-                            //     on: {
-                            //         click: () => {
-                            //             this.remove(params.index)
-                            //         }
-                            //     }
-                            // }, '删除')
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.removeItem(params.index)
+                                    }
+                                }
+                            }, '删除')
                         ]);
                     }
                 }
@@ -141,13 +113,11 @@ export default {
     watch: {
     },
     created: function() {
-        this.getSellItems();
-        this.getEmployees();
-        this.getFellows();
+        this.getFellowTypes();
     },
     methods: {
-        getSellItems() {
-            var post_URL = baseAPIUrl + "sell_items?";
+        getFellowTypes() {
+            var post_URL = baseAPIUrl + "setting/fellow_types?";
             post_URL += "page=" + this.page;
             post_URL += "&page_size=" + this.page_size;
             post_URL += "&order=" + this.order;
@@ -155,7 +125,7 @@ export default {
 
             this.$http.post(post_URL, {search: this.search}).then(response => {
                 const res = response.data;
-                this.sell_items_data = res['data'];
+                this.fellow_type_data = res['data'];
                 this.total_count = res['total_count'];
                 this.page = res['page'];
                 if(res['status'] != "success")
@@ -169,80 +139,36 @@ export default {
                 }
             });
         },
-        getEmployees() {
-            var post_URL = baseAPIUrl + "summarized_employees";
-
-            this.$http.get(post_URL).then(response => {
-                const res = response.data;
-                this.hairdresser_list = res['hairdresser_list'];
-                this.assistant_list = res['assistant_list'];
-                if(res['status'] != "success")
-                    this.$Message.error(res['message']);
-            }, response => {
-                if(response.status == 401){
-                  // this.$Message.error('请登陆');
-                  this.$router.push({
-                    name: "login"
-                  });
-                }
-            });
-
-        },
-        getFellows() {
-            var post_URL = baseAPIUrl + "summarized_fellows";
-
-            this.$http.get(post_URL).then(response => {
-                const res = response.data;
-                this.fellow_list = res['response_list'];
-                if(res['status'] != "success")
-                    this.$Message.error(res['message']);
-            }, response => {
-                if(response.status == 401){
-                  // this.$Message.error('请登陆');
-                  this.$router.push({
-                    name: "login"
-                  });
-                }
-            });
-
-        },
         handleSearch(value) {
             this.search = value;
-            this.getSellItems();
-        },
-        show (index) {
-            this.$Modal.info({
-                title: 'User Info',
-                content: `Name：${this.sell_items_data[index].name}<br>Age：${this.sell_items_data[index].age}<br>Address：${this.sell_items_data[index].address}`
-            })
+            this.getFellowTypes();
         },
         modifyItem(index) {
             this.singleModal = true;
-            this.singleItem = Object.assign({}, this.sell_items_data[index]);
-            this.singleItem['item_type'] = this.singleItem['item_type'].split(',');
-        },
-        remove (index) {
-            this.sell_items_data.splice(index, 1);
+            this.singleItem = Object.assign({}, this.fellow_type_data[index]);
         },
         changePage(page) {
             this.page = page;
-            this.getSellItems();
+            this.getFellowTypes();
         },
         changePageSize(page_size) {
             this.page_size = page_size;
-            this.getSellItems();
+            this.getFellowTypes();
         },
         sortChange(value){
             this.order = value.order;
             this.order_key = value.key;
-            this.getSellItems();
+            this.getFellowTypes();
         },
         visibleChange(status) {
             this.singleModal = status;
         },
         closeModal(text) {
             this.singleModal = false;
-            this.getSellItems();
+            this.getFellowTypes();
+        },
+        removeItem() {
+
         }
     }
 }

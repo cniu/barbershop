@@ -90,7 +90,6 @@ export default {
                 {
                     title: '备注',
                     key: 'comment',
-                    ellipsis: true,
                     sortable: 'custom'
                 },
                 {

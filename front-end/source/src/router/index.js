@@ -41,8 +41,8 @@ export default new Router({
 				  hideInMenu: true,
 				  title: '管理页面',
 				  notCache: true
-			},
-			component: () => import('@/components/dashboard')
+				},
+				component: () => import('@/components/dashboard')
 			},
 			{
 				path: '/sell_items',
@@ -51,8 +51,8 @@ export default new Router({
 				  hideInMenu: true,
 				  title: '开单记录',
 				  notCache: true
-			},
-			component: () => import('@/components/sell-items')
+				},
+				component: () => import('@/components/sell-items')
 			},
 			{
 				path: '/finance_analysis',
@@ -64,22 +64,49 @@ export default new Router({
 				component: () => import('@/components/finance-analysis')
 			},
 			{
-				path: '/account/list',
-				name: 'account-list',
+				path: '/fellow/list',
+				name: 'fellow-list',
 				meta: {
 				  title: '会员列表',
 				  hideInMenu: true
 				},
-				component: () => import('@/components/account/account-list/')
+				component: () => import('@/components/fellows/fellow-list/')
 			},
 			{
-				path: '/account/consumptions',
-				name: 'account-consumption',
+				path: '/fellow/consumptions',
+				name: 'fellow-consumption',
 				meta: {
 				  title: '会员消费记录',
 				  hideInMenu: true
 				},
-				component: () => import('@/components/account/account-consumptions/')
+				component: () => import('@/components/fellows/fellow-consumptions/')
+			},
+			{
+				path: '/setting/employee_type',
+				name: 'employee-type-setting',
+				meta: {
+				  title: '人员类别管理',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/setting/employee-type/')
+			},
+			{
+				path: '/setting/fellow_type',
+				name: 'fellow-type-setting',
+				meta: {
+				  title: '会员卡类型管理',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/setting/fellow-type/')
+			},
+			{
+				path: '/setting/users',
+				name: 'user-access-manage',
+				meta: {
+				  title: '登陆权限管理',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/setting/user-access/')
 			}
 		]
 	}
