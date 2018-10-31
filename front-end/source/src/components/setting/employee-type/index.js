@@ -1,3 +1,3 @@
-import SellItems from './sell-items.vue'
-export default SellItems 
+import EmployeeTypeManage from './employee-type.vue'
+export default EmployeeTypeManage 
 

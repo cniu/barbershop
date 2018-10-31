@@ -1,3 +1,3 @@
-import SellItems from './sell-items.vue'
-export default SellItems 
+import UserManage from './users.vue'
+export default UserManage 
 

@@ -18,7 +18,8 @@ async def login(request):
         username = request.json.get('username')
         password = request.json.get('password')
         page_level = request.json.get('page_level', '1')
-        login_sql = 'select * from users where username = "%s" and password = "%s" and page_level = "%s"' % (username, password, page_level)
+        # login_sql = 'select * from users where username = "%s" and password = "%s" and page_level = "%s"' % (username, password, page_level)
+        login_sql = 'select * from users where username = "%s" and password = "%s"' % (username, password)
         account = await request.app.mysql.query_select(login_sql)
         if len(account) != 0:
             user = User(account[0][0], username)

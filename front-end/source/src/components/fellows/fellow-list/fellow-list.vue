@@ -1,40 +1,46 @@
 <template>
     <div>
-        <Row type="flex" justify="end" class="code-row-bg">
-            <Col span="8">
+        <Row type="flex" justify="end" class="code-row-bg" style="padding: 10px;">
+            <Col span="4">
+                <Button type="primary" shape="circle" @click="addItem">添加</Button>
+            </Col>
+            <Col span="8" offset="12">
                 <Input search enter-button placeholder="请输入关键字搜索" style="width: 300px;float: right;" @on-search="handleSearch" v-model="search"/>
             </Col>
         </Row>
         <Row type="flex" justify="start" class="code-row-bg" style="padding: 10px;">
             <Col span="24">
-                <Table border :columns="columns" :data="sell_items_data" @on-sort-change="sortChange"></Table>
+                <Table border :columns="columns" :data="fellow_list_data" @on-sort-change="sortChange"></Table>
             </Col>
         </Row>
-        <Row type="flex" justify="end" class="code-row-bg">
+        <Row type="flex" justify="end" class="code-row-bg" style="padding: 10px;">
             <Col span="24">
                 <Page :total="total_count" show-total show-sizer :current="page" :page-size="page_size" :page-size-opts=[20,50,100,500] @on-change="changePage" @on-page-size-change="changePageSize" style="float: right;"/>
             </Col>
         </Row>
         <Modal
             v-model="singleModal" footer-hide
-            title="修改单子"
+            :title="modal_title"
             @on-visible-change="visibleChange">
-            <SellItem :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal" :hairdresser_list="hairdresser_list" :assistant_list="assistant_list" :fellow_list="fellow_list"></SellItem>
+            <FellowItem :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal" :card_type_list="card_type_list" :employee_list="employee_list"></FellowItem>
         </Modal>
     </div>
 </template>
 <script>
-import SellItem from './sell-item.vue'
+import FellowItem from './sell-item.vue'
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
-    name: "SellItems",
+    name: "FellowList",
     components: {
-        SellItem
+        FellowItem
     },
     data () {
         return {
+            employee_list: [],
+            card_type_list: [],
             singleItem: {},
             modal_type: "modify",
+            modal_title: "",
             singleModal: false,
             search: '',
             page: 1,
@@ -42,10 +48,7 @@ export default {
             total_count: 0,
             order: "desc",
             order_key: "created_time",
-            sell_items_data: [],
-            assistant_list: [],
-            hairdresser_list: [],
-            fellow_list: [],
+            fellow_list_data: [],
             columns: [
                 {
                     title: '编号',
@@ -53,47 +56,43 @@ export default {
                     width: 80
                 },
                 {
-                    title: '单号',
-                    key: 'item_number',
+                    title: '姓名',
+                    key: 'name',
                     sortable: 'custom'
                 },
                 {
-                    title: '发型师',
-                    key: 'hairdresser',
+                    title: '手机号',
+                    key: 'phone_number',
                     sortable: 'custom'
                 },
                 {
-                    title: '助理',
-                    key: 'assistant',
+                    title: '生日',
+                    key: 'name',
                     sortable: 'custom'
                 },
                 {
-                    title: '消费类型',
-                    key: 'item_type',
+                    title: '会员卡类型',
+                    key: 'card_type',
                     sortable: 'custom'
                 },
                 {
-                    title: '金额',
+                    title: '余额',
                     key: 'money',
                     sortable: 'custom'
                 },
                 {
-                    title: '付款类型',
-                    key: 'pay_type',
+                    title: '开卡人',
+                    key: 'created_by',
                     sortable: 'custom'
                 },
+                // {
+                //     title: '备注',
+                //     key: 'comment',
+                //     ellipsis: true,
+                //     sortable: 'custom'
+                // },
                 {
-                    title: '会员',
-                    key: 'fellow',
-                    sortable: 'custom'
-                },
-                {
-                    title: '备注',
-                    key: 'comment',
-                    sortable: 'custom'
-                },
-                {
-                    title: '开单时间',
+                    title: '更新时间',
                     key: 'created_time',
                     sortable: 'custom'
                 },
@@ -118,17 +117,17 @@ export default {
                                     }
                                 }
                             }, '编辑'),
-                            // h('Button', {
-                            //     props: {
-                            //         type: 'error',
-                            //         size: 'small'
-                            //     },
-                            //     on: {
-                            //         click: () => {
-                            //             this.remove(params.index)
-                            //         }
-                            //     }
-                            // }, '删除')
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.removeItem(params.index)
+                                    }
+                                }
+                            }, '删除')
                         ]);
                     }
                 }
@@ -140,13 +139,13 @@ export default {
     watch: {
     },
     created: function() {
-        this.getSellItems();
+        this.getFellowLists();
+        this.getCardTypeList();
         this.getEmployees();
-        this.getFellows();
     },
     methods: {
-        getSellItems() {
-            var post_URL = baseAPIUrl + "sell_items?";
+        getFellowLists() {
+            var post_URL = baseAPIUrl + "fellows?";
             post_URL += "page=" + this.page;
             post_URL += "&page_size=" + this.page_size;
             post_URL += "&order=" + this.order;
@@ -154,7 +153,7 @@ export default {
 
             this.$http.post(post_URL, {search: this.search}).then(response => {
                 const res = response.data;
-                this.sell_items_data = res['data'];
+                this.fellow_list_data = res['data'];
                 this.total_count = res['total_count'];
                 this.page = res['page'];
                 if(res['status'] != "success")
@@ -168,13 +167,12 @@ export default {
                 }
             });
         },
-        getEmployees() {
-            var post_URL = baseAPIUrl + "summarized_employees";
+        getCardTypeList() {
+            var post_URL = baseAPIUrl + "summarized_setting";
 
             this.$http.get(post_URL).then(response => {
                 const res = response.data;
-                this.hairdresser_list = res['hairdresser_list'];
-                this.assistant_list = res['assistant_list'];
+                this.card_type_list = res['card_type_list'];
                 if(res['status'] != "success")
                     this.$Message.error(res['message']);
             }, response => {
@@ -187,12 +185,12 @@ export default {
             });
 
         },
-        getFellows() {
-            var post_URL = baseAPIUrl + "summarized_fellows";
+        getEmployees() {
+            var post_URL = baseAPIUrl + "summarized_employees";
 
             this.$http.get(post_URL).then(response => {
                 const res = response.data;
-                this.fellow_list = res['response_list'];
+                this.employee_list = res['employee_list'];
                 if(res['status'] != "success")
                     this.$Message.error(res['message']);
             }, response => {
@@ -207,41 +205,67 @@ export default {
         },
         handleSearch(value) {
             this.search = value;
-            this.getSellItems();
-        },
-        show (index) {
-            this.$Modal.info({
-                title: 'User Info',
-                content: `Name：${this.sell_items_data[index].name}<br>Age：${this.sell_items_data[index].age}<br>Address：${this.sell_items_data[index].address}`
-            })
+            this.getFellowLists();
         },
         modifyItem(index) {
             this.singleModal = true;
-            this.singleItem = Object.assign({}, this.sell_items_data[index]);
-            this.singleItem['item_type'] = this.singleItem['item_type'].split(',');
-        },
-        remove (index) {
-            this.sell_items_data.splice(index, 1);
+            this.modal_type = "modify";
+            this.modal_title = "修改会员信息";
+            this.singleItem = Object.assign({}, this.fellow_list_data[index]);
         },
         changePage(page) {
             this.page = page;
-            this.getSellItems();
+            this.getFellowLists();
         },
         changePageSize(page_size) {
             this.page_size = page_size;
-            this.getSellItems();
+            this.getFellowLists();
         },
         sortChange(value){
             this.order = value.order;
             this.order_key = value.key;
-            this.getSellItems();
+            this.getFellowLists();
         },
         visibleChange(status) {
             this.singleModal = status;
         },
         closeModal(text) {
             this.singleModal = false;
-            this.getSellItems();
+            this.getFellowLists();
+        },
+        removeItem(index) {
+            this.$Modal.confirm({
+                title: '是否确认删除',
+                content: '',
+                onOk: () => {
+                    var post_URL = baseAPIUrl + "fellow" + this.fellow_list_data[index].item_number;
+
+                    this.$http.delete(post_URL).then(response => {
+                        const res = response.data;
+                        if(res['status'] != "success")
+                            this.$Message.error(res['message']);
+
+                        this.$Message.success('删除成功!');
+                        this.getFellowLists();
+                    }, response => {
+                        if(response.status == 401){
+                          // this.$Message.error('请登陆');
+                          this.$router.push({
+                            name: "login"
+                          });
+                        }
+                    });
+                },
+                onCancel: () => {
+                    // this.$Message.info('Clicked cancel');
+                }
+            });
+        },
+        addItem() {
+            this.modal_type = "add";
+            this.modal_title = "开卡";
+            this.singleItem = {};
+            this.singleModal = true;
         }
     }
 }

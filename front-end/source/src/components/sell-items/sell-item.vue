@@ -49,8 +49,8 @@
                 <Input v-model="singleItem.comment" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="可以输入备注以便记录"></Input>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="handleSubmit('singleItem')">Submit</Button>
-                <Button @click="handleReset('singleItem')" style="margin-left: 8px">Reset</Button>
+                <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
+                <Button @click="handleReset('singleItem')" style="margin-left: 8px">重置</Button>
             </FormItem>
         </Form>
     </Row>

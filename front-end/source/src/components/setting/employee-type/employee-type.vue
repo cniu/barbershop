@@ -10,7 +10,7 @@
         </Row>
         <Row type="flex" justify="start" class="code-row-bg" style="padding: 10px;">
             <Col span="24">
-                <Table border :columns="columns" :data="fellow_type_data" @on-sort-change="sortChange"></Table>
+                <Table border :columns="columns" :data="employee_type_data" @on-sort-change="sortChange"></Table>
             </Col>
         </Row>
         <Row type="flex" justify="end" class="code-row-bg" style="padding: 10px;">
@@ -22,17 +22,17 @@
             v-model="singleModal" footer-hide
             :title="modal_title"
             @on-visible-change="visibleChange">
-            <FellowType :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal"></FellowType>
+            <EmployeeType :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal"></EmployeeType>
         </Modal>
     </div>
 </template>
 <script>
-import FellowType from './sell-item.vue'
+import EmployeeType from './sell-item.vue'
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
-    name: "FellowTypeManage",
+    name: "EmployeeTypeManage",
     components: {
-        FellowType
+        EmployeeType
     },
     data () {
         return {
@@ -46,7 +46,7 @@ export default {
             total_count: 0,
             order: "desc",
             order_key: "created_time",
-            fellow_type_data: [],
+            employee_type_data: [],
             columns: [
                 {
                     title: '编号',
@@ -54,8 +54,13 @@ export default {
                     width: 80
                 },
                 {
-                    title: '会员卡类型名称',
-                    key: 'card_type_name',
+                    title: '人员类型名称',
+                    key: 'type_name',
+                    sortable: 'custom'
+                },
+                {
+                    title: '职责',
+                    key: 'responsibility',
                     sortable: 'custom'
                 },
                 {
@@ -112,11 +117,11 @@ export default {
     watch: {
     },
     created: function() {
-        this.getFellowTypes();
+        this.getEmployeeTypes();
     },
     methods: {
-        getFellowTypes() {
-            var post_URL = baseAPIUrl + "setting/fellow_types?";
+        getEmployeeTypes() {
+            var post_URL = baseAPIUrl + "setting/employee_types?";
             post_URL += "page=" + this.page;
             post_URL += "&page_size=" + this.page_size;
             post_URL += "&order=" + this.order;
@@ -124,7 +129,7 @@ export default {
 
             this.$http.post(post_URL, {search: this.search}).then(response => {
                 const res = response.data;
-                this.fellow_type_data = res['data'];
+                this.employee_type_data = res['data'];
                 this.total_count = res['total_count'];
                 this.page = res['page'];
                 if(res['status'] != "success")
@@ -140,41 +145,40 @@ export default {
         },
         handleSearch(value) {
             this.search = value;
-            this.getFellowTypes();
+            this.getEmployeeTypes();
         },
         modifyItem(index) {
             this.singleModal = true;
             this.modal_type = "modify";
-            this.modal_title = "修改卡类别";
-            this.singleItem = Object.assign({}, this.fellow_type_data[index]);
+            this.modal_title = "修改人员类别";
+            this.singleItem = Object.assign({}, this.employee_type_data[index]);
         },
         changePage(page) {
             this.page = page;
-            this.getFellowTypes();
+            this.getEmployeeTypes();
         },
         changePageSize(page_size) {
             this.page_size = page_size;
-            this.getFellowTypes();
+            this.getEmployeeTypes();
         },
         sortChange(value){
             this.order = value.order;
             this.order_key = value.key;
-            this.getFellowTypes();
+            this.getEmployeeTypes();
         },
         visibleChange(status) {
             this.singleModal = status;
         },
         closeModal(text) {
             this.singleModal = false;
-            this.getFellowTypes();
+            this.getEmployeeTypes();
         },
         removeItem(index) {
             this.$Modal.confirm({
                 title: '是否确认删除',
                 content: '',
                 onOk: () => {
-                    console.log(this.singleItem);
-                    var post_URL = baseAPIUrl + "setting/fellow_type/" + this.fellow_type_data[index].item_number;
+                    var post_URL = baseAPIUrl + "setting/employee_type/" + this.employee_type_data[index].item_number;
 
                     this.$http.delete(post_URL).then(response => {
                         const res = response.data;
@@ -182,7 +186,7 @@ export default {
                             this.$Message.error(res['message']);
 
                         this.$Message.success('删除成功!');
-                        this.getFellowTypes();
+                        this.getEmployeeTypes();
                     }, response => {
                         if(response.status == 401){
                           // this.$Message.error('请登陆');
@@ -199,7 +203,7 @@ export default {
         },
         addItem() {
             this.modal_type = "add";
-            this.modal_title = "增加卡类别";
+            this.modal_title = "增加人员类别";
             this.singleItem = {};
             this.singleModal = true;
         }

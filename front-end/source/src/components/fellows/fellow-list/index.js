@@ -1,3 +1,3 @@
-import SellItems from './sell-items.vue'
-export default SellItems 
+import FellowList from './fellow-list.vue'
+export default FellowList 
 

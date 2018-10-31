@@ -146,15 +146,65 @@ class SellItems(HTTPMethodView):
 
 app.add_route(SellItems.as_view(), '/sell_items/')
 
-
 class Fellows(HTTPMethodView):
-    # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
-    async def get(self, request):
-        fellow_list = await request.app.mysql.query_select('select * from fellow_list')
+    async def post(self, request):
+        data = request.json if request.json is not None else {}
+        args = request.args if request.args is not None else {}
+
+        try:
+            search = data.get('search', '')
+            page = int(args.get('page', 1))
+            page_size = int(args.get('page_size', 20))
+            order_by = args.get('order_key', 'created_time')
+            order = args.get('order', 'desc')
+            if order.lower() not in ['desc', 'asc']:
+                order = 'desc'
+
+            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`card_type`,''),IFNULL(`created_by`,'')) LIKE '%%%s%%'" % search
+
+            res_total_count = await request.app.mysql.query_select('select count(*) from fellow_list %s' % (search_sql))
+            total_count = int(res_total_count[0][0])
+            if total_count <= (page - 1) * page_size:
+                page = 1
+
+            page_sql = "limit %s, %s" % ((page - 1) * page_size, page_size)
+            fellow_list = await request.app.mysql.query_select('select * from fellow_list %s order by %s %s %s' % (search_sql, order_by, order, page_sql))
+            response_list = []
+            for raw_id, value in enumerate(fellow_list):
+                n_id, name, phone_number, birthday, password, card_type, money, created_by, created_time = value
+                response_list.append({
+                    "raw_id": raw_id + 1,
+                    "name": name,
+                    "phone_number": int(phone_number),
+                    "birthday": birthday,
+                    "card_type": card_type,
+                    "money": money,
+                    "created_by": created_by,
+                    "created_time": str(created_time),
+                })
+        except Exception as e:
+            return response.json({
+                "data": [],
+                "page": 1,
+                "total_count": 0,
+                "status": "failed",
+                "message": "获取失败，错误信息为%s" % str(e)
+            })
+
+        return response.json({"data": response_list, "page": page, "total_count": int(total_count), "status": "success"})
+
+app.add_route(Fellows.as_view(), '/fellows/')
+
+class Fellow(HTTPMethodView):
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+
+    async def get(self, request, phone_number):
+        fellow_list = await request.app.mysql.query_select('select * from fellow_list where phone_number = "%s"' % phone_number)
         response_list = []
         for raw_id, value in enumerate(fellow_list):
-            n_id, name, phone_number, birthday, password, card_type, money, created_by, update_time = value
+            n_id, name, phone_number, birthday, password, card_type, money, created_by, created_time = value
             response_list.append({
                 "raw_id": raw_id + 1,
                 "name": name,
@@ -166,24 +216,6 @@ class Fellows(HTTPMethodView):
                 "created_time": str(created_time),
             })
         return response.json({"data": response_list, "status": "success"})
-
-app.add_route(Fellows.as_view(), '/fellows/')
-
-
-class Fellow(HTTPMethodView):
-    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
-
-    async def get(self, request, phone_number):
-        fellow_list = await request.app.mysql.query_select('select * from fellow_list where phone_number = "%s"' % phone_number)
-        response_list = []
-        for raw_id, value in enumerate(fellow_list):
-            n_id, name, phone_number, birthday, password, card_type, money, created_by, update_time = value
-            response_list.append([
-                raw_id,
-                name, phone_number, birthday, password, card_type, money, created_by, str(
-                    update_time)
-            ])
-        return response.json({"data": response_list})
 
     async def post(self, request, phone_number):
         data = request.json
@@ -325,7 +357,7 @@ app.add_route(Fellow.as_view(), '/employee/<phone_number:int>')
 @auth.login_required(handle_no_auth=handle_no_auth)
 async def getEmployeesName(request):
     employee_list = await request.app.mysql.query_select('select name, phone_number, emplyee_type from employee_list')
-    hairdresser_list, assistant_list = [], []
+    hairdresser_list, assistant_list, employees = [], [], []
     for raw_id, value in enumerate(employee_list):
         name, phone_number, emplyee_type = value
         if emplyee_type == "发型师":
@@ -338,12 +370,16 @@ async def getEmployeesName(request):
                 "value": name,
                 "label": name
             })
+        employees.append({
+                "value": name,
+                "label": name
+            })
     return response.json({
         "hairdresser_list": hairdresser_list, 
         "assistant_list": assistant_list,
+        "employee_list": employees,
         "status": "success"
     })
-
 
 @app.route("/summarized_fellows")
 @auth.login_required(handle_no_auth=handle_no_auth)
@@ -361,5 +397,21 @@ async def getFellowsInfo(request):
         })
     return response.json({
         "response_list": response_list,
+        "status": "success"
+    })
+
+@app.route("/summarized_setting")
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def getFellowsInfo(request):
+    fellow_types = await request.app.mysql.query_select('select card_type_name, comment from fellow_types')
+    card_type_list = []
+    for raw_id, value in enumerate(fellow_types):
+        card_type_name, comment = value
+        card_type_list.append({
+            "value": card_type_name,
+            "label": card_type_name
+        })
+    return response.json({
+        "card_type_list": card_type_list,
         "status": "success"
     })

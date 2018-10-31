@@ -4,53 +4,31 @@
             <FormItem label="单号" prop="item" style="display: none;">
                 <Input disabled v-model="singleItem.item_number"></Input>
             </FormItem>
-            <FormItem label="发型师" prop="hairdresser">
-                <Select v-model="singleItem.hairdresser" placeholder="请选择发型师">
-                    <Option v-for="(option, index) in hairdresser_list" :value="option.value" :key="index">{{option.label}}</Option>
+            <FormItem label="姓名" prop="name">
+                <Input v-model="singleItem.name" placeholder="请输入姓名"></Input>
+            </FormItem>
+            <FormItem label="手机号" prop="phone_number">
+                <InputNumber style="width: 280px;" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
+            </FormItem>
+            <FormItem label="生日" prop="birthday">
+                <DatePicker type="date" placeholder="Select date" style="width: 200px"></DatePicker>
+            </FormItem>
+            <FormItem label="卡类型" prop="card_type">
+                <Select v-model="singleItem.card_type" placeholder="请选择开卡人">
+                    <Option v-for="(option, index) in card_type_list" :value="option.value" :key="index">{{option.label}}</Option>
                 </Select>
             </FormItem>
-            <FormItem label="助理" prop="assistant">
-                <Select v-model="singleItem.assistant" placeholder="请选择助理">
-                    <Option v-for="(option, index) in assistant_list" :value="option.value" :key="index">{{option.label}}</Option>
-                </Select>
-            </FormItem>
-            <FormItem label="消费类型" prop="item_type">
-                <CheckboxGroup v-model="singleItem.item_type">
-                    <Checkbox label="染发"></Checkbox>
-                    <Checkbox label="烫发"></Checkbox>
-                    <Checkbox label="假发"></Checkbox>
-                    <Checkbox label="洗头"></Checkbox>
-                </CheckboxGroup>
-            </FormItem>
-            <FormItem label="消费金额" prop="money">
+            <FormItem label="余额" prop="money">
                 <InputNumber style="width: 180px;" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
             </FormItem>
-            <FormItem label="付款类型" prop="pay_type">
-                <RadioGroup v-model="singleItem.pay_type">
-                    <Radio label="现金">现金</Radio>
-                    <Radio label="微信">微信</Radio>
-                    <Radio label="支付宝">支付宝</Radio>
-                    <Radio label="刷卡">刷卡</Radio>
-                </RadioGroup>
-            </FormItem>
-            <FormItem label="会员" prop="fellow">
-                <Row>
-                    <Col span="16">
-                        <Select v-model="singleItem.fellow" style="width: 180px;" filterable>
-                            <Option v-for="(option, index) in fellow_list" :value="option.value" :key="index" >{{option.label}}</Option>
-                        </Select>
-                    </Col>
-                    <Col span="8">    
-                        <Button type="primary" size="small" @click="showFellowInfo">查看会员信息</Button>
-                    </Col>
-                </Row>                
-            </FormItem>
-            <FormItem label="备注" prop="comment">
-                <Input v-model="singleItem.comment" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="可以输入备注以便记录"></Input>
+            <FormItem label="开卡人" prop="created_by">
+                <Select v-model="singleItem.created_by" placeholder="请选择开卡人">
+                    <Option v-for="(option, index) in employee_list" :value="option.value" :key="index">{{option.label}}</Option>
+                </Select>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="handleSubmit('singleItem')">Submit</Button>
-                <Button @click="handleReset('singleItem')" style="margin-left: 8px">Reset</Button>
+                <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
+                <Button @click="handleReset('singleItem')" style="margin-left: 8px">重置</Button>
             </FormItem>
         </Form>
     </Row>
@@ -60,47 +38,42 @@ const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "SellItem",
     props: {
-        hairdresser_list: '',
-        assistant_list: '',
-        fellow_list: '',
         modal_type: '',
+        card_type_list: '',
+        employee_list: '',
         singleItem: {
-            hairdresser: '',
-            assistant: '',
-            item_type: [],
+            name: '',
+            phone_number: '',
+            birthday: '',
+            card_type: '',
             money: '',
-            pay_type: '',
-            fellow: '',
-            comment: '',
+            created_by: '',
             item_number: ''
         }
     },
     data() {
         return {
             ruleValidate: {
-                hairdresser: [
-                    { required: true, message: '请选择发型师' }
+                name: [
+                    { required: true, message: '请输入名称' }
                 ],
-                assistant: [
-                    { required: true, message: '请选择助理' }
+                phone_number: [
+                    { required: true, message: '请输入电话号码'},
+                    { type: 'number', message: '错误格式'}
                 ],
-                pay_type: [
+                birthday: [
+                    { required: false, message: '请选择日期'},
+                    { type: 'date', message: '错误格式'}
+                ],
+                card_type: [
                     { required: true, message: '请选择付款类型' }
                 ],
                 money: [
                     { required: true, message: '请填写金额' },
                     { type: 'number', message: '错误金额'}
                 ],
-                item_type: [
-                    { required: true, type: 'array', message: '请选择消费类型' }
-                    // { type: 'array', max: 2, message: 'Choose two hobbies at best' }
-                ],
-                fellow: [
-                    { required: false, message: '请输入会员手机号' }
-                ],
-                comment: [
-                    { required: false, message: '请输入备注', trigger: 'blur' },
-                    { type: 'string', max: 200, message: '太长不易读', trigger: 'blur' }
+                created_by: [
+                    { required: true, message: '请选择开卡人' }
                 ]
             }
         }
@@ -111,7 +84,7 @@ export default {
                 if (valid) {
                     if(this.$props.modal_type == "modify"){
 
-                        var post_URL = baseAPIUrl + "sell_item/" + this.singleItem.item_number;
+                        var post_URL = baseAPIUrl + "fellow" + this.singleItem.phone_number;
 
                         this.$http.put(post_URL, this.singleItem).then(response => {
                             const res = response.data;
@@ -130,8 +103,7 @@ export default {
                         });
                     }
                     else if(this.$props.modal_type == "add"){
-                        var post_URL = baseAPIUrl + "sell_item/1";
-                        this.singleItem.item_type = this.singleItem.item_type.join(",");
+                        var post_URL = baseAPIUrl + "fellow";
                         this.$http.post(post_URL, this.singleItem).then(response => {
                             const res = response.data;
                             if(res['status'] != "success")
@@ -155,35 +127,6 @@ export default {
         },
         handleReset (name) {
             this.$refs[name].resetFields();
-        },
-        showFellowInfo () {
-            const fellow_info = this.fellow_list.filter(item => item['value'] == this.singleItem.fellow);
-            const content = 
-                '<p>姓名：' + fellow_info[0]['name'] + '</p>' +
-                '<p>卡类型：' + fellow_info[0]['card_type'] + '</p>' +
-                '<p>余额：' + fellow_info[0]['money'] + '</p>' + 
-                '<p>手机号：' + fellow_info[0]['value'] + '</p>';
-            this.$Modal.success({
-                title: "会员信息",
-                content: content
-            });
-        },
-        getFellowList (query) {
-            // if (query !== '') {
-            //     this.fellow_loading = true;
-            //     setTimeout(() => {
-            //         this.fellow_loading = false;
-            //         const list = this.list.map(item => {
-            //             return {
-            //                 value: item,
-            //                 label: item
-            //             };
-            //         });
-            //         this.fellow_list = list.filter(item => item.label.toLowerCase().indexOf(query.toLowerCase()) > -1);
-            //     }, 200);
-            // } else {
-            //     this.fellow_list = [];
-            // }
         }
     }
 }
