@@ -8,13 +8,17 @@
                 <Input v-model="singleItem.name" placeholder="请输入姓名"></Input>
             </FormItem>
             <FormItem label="手机号" prop="phone_number">
-                <InputNumber style="width: 280px;" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
+                <InputNumber style="width: 280px;" disabled v-if="modal_type != 'add'" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
+                <InputNumber style="width: 280px;" v-if="modal_type == 'add'" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
+            </FormItem>
+            <FormItem label="消费密码" prop="password">
+                <Input v-model="singleItem.password" type="password" placeholder="请设置消费密码"></Input>
             </FormItem>
             <FormItem label="生日" prop="birthday">
-                <DatePicker type="date" placeholder="Select date" style="width: 200px"></DatePicker>
+                <DatePicker v-model="singleItem.birthday" type="date" placeholder="Select date" style="width: 200px"></DatePicker>
             </FormItem>
             <FormItem label="卡类型" prop="card_type">
-                <Select v-model="singleItem.card_type" placeholder="请选择开卡人">
+                <Select v-model="singleItem.card_type" placeholder="请选择会员卡类型">
                     <Option v-for="(option, index) in card_type_list" :value="option.value" :key="index">{{option.label}}</Option>
                 </Select>
             </FormItem>
@@ -46,8 +50,9 @@ export default {
             phone_number: '',
             birthday: '',
             card_type: '',
-            money: '',
+            money: 0,
             created_by: '',
+            password: '',
             item_number: ''
         }
     },
@@ -55,7 +60,7 @@ export default {
         return {
             ruleValidate: {
                 name: [
-                    { required: true, message: '请输入名称' }
+                    { required: true, message: '请输入名称', trigger: "blur" }
                 ],
                 phone_number: [
                     { required: true, message: '请输入电话号码'},
@@ -63,10 +68,10 @@ export default {
                 ],
                 birthday: [
                     { required: false, message: '请选择日期'},
-                    { type: 'date', message: '错误格式'}
+                    // { required: false, type: 'date', message: '错误格式'}
                 ],
                 card_type: [
-                    { required: true, message: '请选择付款类型' }
+                    { required: true, message: '请选择卡类型' }
                 ],
                 money: [
                     { required: true, message: '请填写金额' },
@@ -84,15 +89,19 @@ export default {
                 if (valid) {
                     if(this.$props.modal_type == "modify"){
 
-                        var post_URL = baseAPIUrl + "fellow" + this.singleItem.phone_number;
+                        var post_URL = baseAPIUrl + "fellow/" + this.singleItem.phone_number;
 
-                        this.$http.put(post_URL, this.singleItem).then(response => {
+                        var temp = Object.assign({}, this.singleItem);
+                        temp.birthday = temp.birthday.toString();
+                        this.$http.put(post_URL, temp).then(response => {
                             const res = response.data;
                             if(res['status'] != "success")
                                 this.$Message.error(res['message']);
-
-                            this.$Message.success('修改成功!');
-                            this.$emit('closeModal', 'submit');
+                            else{
+                                this.$Message.success('修改成功!');
+                                this.$emit('closeModal', 'submit');
+                                this.$refs[name].resetFields();
+                            }
                         }, response => {
                             if(response.status == 401){
                               // this.$Message.error('请登陆');
@@ -103,14 +112,19 @@ export default {
                         });
                     }
                     else if(this.$props.modal_type == "add"){
-                        var post_URL = baseAPIUrl + "fellow";
-                        this.$http.post(post_URL, this.singleItem).then(response => {
+                        var post_URL = baseAPIUrl + "fellow/1";
+
+                        var temp = Object.assign({}, this.singleItem);
+                        temp.birthday = temp.birthday.toString();
+                        this.$http.post(post_URL, temp).then(response => {
                             const res = response.data;
                             if(res['status'] != "success")
                                 this.$Message.error(res['message']);
-
-                            this.$Message.success('新增成功!');
-                            this.$emit('closeModal', 'submit');
+                            else{
+                                this.$Message.success('新增成功!');
+                                this.$emit('closeModal', 'submit');  
+                                this.$refs[name].resetFields();    
+                            }
                         }, response => {
                             if(response.status == 401){
                               // this.$Message.error('请登陆');

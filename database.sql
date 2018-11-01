@@ -49,7 +49,7 @@ CREATE TABLE `barbershop`.`fellow_list` (
 	id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(16) NOT NULL,
 	`phone_number` VARCHAR(32) NOT NULL unique,
-	`birthday` VARCHAR(32) NOT NULL,
+	`birthday` VARCHAR(100) NOT NULL,
     `password` VARCHAR(32),
     card_type varchar(20) NOT NULL,
     money int not null,
@@ -92,6 +92,7 @@ insert into `barbershop`.`fellow_types` (`card_type_name`, `discount`, `comment`
 insert into `barbershop`.`employee_types` (`type_name`, `responsibility`, `comment`) values ('店长', '负责协调', '备注');
 
 insert into fellow_list (name, phone_number, birthday, password, card_type, money, created_by) values ("Neal", "1937843398", "", "123", "5折卡", "1000", "牛");
+update fellow_list set name = "Neal", birthday = "Thu Nov 01 2018 00:00:00 GMT+0800 (China Standard Time)", password = "123", card_type = "5折卡", money = "1000", created_by = "牛" where phone_number = "1937843398";
 
 insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("牛", "1392239", "", "店长", "1000", "0.5", "在职");
 insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("委任为", "13922391", "", "发型师", "1000", "0.5", "在职");

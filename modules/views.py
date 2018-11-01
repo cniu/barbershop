@@ -75,7 +75,6 @@ class SellItem(HTTPMethodView):
         sql = 'update sell_item_list set hairdresser = "%s", assistant = "%s", item_type = "%s", money = "%s", pay_type = "%s", fellow = "%s", comment = "%s" \
             where item_number = "%s"' \
             % (hairdresser, assistant, item_type, money, pay_type, fellow, comment, item_number)
-        print(sql)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -178,6 +177,7 @@ class Fellows(HTTPMethodView):
                     "raw_id": raw_id + 1,
                     "name": name,
                     "phone_number": int(phone_number),
+                    "password": password,
                     "birthday": birthday,
                     "card_type": card_type,
                     "money": money,
@@ -228,9 +228,9 @@ class Fellow(HTTPMethodView):
             data.get('money', 0),
             data.get('created_by', '')
         )
-        sql = 'insert into fellow_list (name, phone_number, birthday, password, card_type, money, created_by) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
-            % (name, phone_number, birthday, password, card_type, money, created_by)
         try:
+            sql = 'insert into fellow_list (name, phone_number, birthday, password, card_type, money, created_by) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
+                % (name, phone_number, birthday, password, card_type, int(money), created_by)
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
             return response.json({"status": "failed", "message": "开卡失败，错误信息为%s" % str(e)})
@@ -247,9 +247,10 @@ class Fellow(HTTPMethodView):
             data.get('money', 0),
             data.get('created_by', '')
         )
-        sql = 'update fellow_list (name, birthday, password, card_type, money, created_by) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s") where phone_number = "%s"' \
-            % (name, birthday, password, card_type, money, created_by, phone_number)
         try:
+            sql = 'update fellow_list set name = "%s", birthday = "%s", password = "%s", card_type = "%s", money = "%s", created_by = "%s" \
+                where phone_number = "%s"' \
+                % (name, birthday, password, card_type, int(money), created_by, phone_number)
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
             return response.json({"status": "failed", "message": str(e)})
@@ -257,8 +258,7 @@ class Fellow(HTTPMethodView):
 
     async def delete(self, request, phone_number):
         data = request.json
-        sql = 'delete from fellow_list where phone_number = "%s"' % s(
-            phone_number)
+        sql = 'delete from fellow_list where phone_number = "%s"' % (phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -332,8 +332,10 @@ class Employee(HTTPMethodView):
             data.get('percentage', 0),
             data.get('status', 0)
         )
-        sql = 'update fellow_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s") where phone_number = "%s"' \
-            % (name, phone_number, birthday, emplyee_type, base_salary, percentage, status)
+        money = int(money)
+        sql = 'update employee_list set name = "%s", birthday = "%s", emplyee_type = "%s", base_salary = "%s", percentage = "%s", status = "%s" \
+            where phone_number = "%s"' \
+            % (name, birthday, emplyee_type, base_salary, percentage, status, phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -342,7 +344,7 @@ class Employee(HTTPMethodView):
 
     async def delete(self, request, phone_number):
         data = request.json
-        sql = 'delete from fellow_list where phone_number = "%s"' % s(
+        sql = 'delete from employee_list where phone_number = "%s"' % s(
             phone_number)
         try:
             res = await request.app.mysql.query_other(sql)

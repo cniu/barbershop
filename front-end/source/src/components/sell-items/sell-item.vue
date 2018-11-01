@@ -67,8 +67,8 @@ export default {
         singleItem: {
             hairdresser: '',
             assistant: '',
-            item_type: [],
-            money: '',
+            item_type: '',
+            money: 0,
             pay_type: '',
             fellow: '',
             comment: '',
@@ -117,9 +117,11 @@ export default {
                             const res = response.data;
                             if(res['status'] != "success")
                                 this.$Message.error(res['message']);
-
-                            this.$Message.success('修改成功!');
-                            this.$emit('closeModal', 'submit');
+                            else{
+                                this.$Message.success('修改成功!');
+                                this.$emit('closeModal', 'submit');
+                                this.$refs[name].resetFields();
+                            }
                         }, response => {
                             if(response.status == 401){
                               // this.$Message.error('请登陆');
@@ -136,9 +138,11 @@ export default {
                             const res = response.data;
                             if(res['status'] != "success")
                                 this.$Message.error(res['message']);
-
-                            this.$Message.success('新增成功!');
-                            this.$emit('closeModal', 'submit');
+                            else{
+                                this.$Message.success('新增成功!');
+                                this.$emit('closeModal', 'submit');
+                                this.$refs[name].resetFields();  
+                            }
                         }, response => {
                             if(response.status == 401){
                               // this.$Message.error('请登陆');

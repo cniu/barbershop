@@ -27,6 +27,7 @@ export default {
     }
   },
   created: function(){
+    console.log(this.$router);
     if (localStorage.activeMenuName)
       delete localStorage.activeMenuName
   },
@@ -37,7 +38,6 @@ export default {
           "password": password
       }).then(response => {
           this.$Message.success('登陆成功，欢迎' + userName);
-          console.log(this.$router);
           this.$router.push({
             name: "index"
           });

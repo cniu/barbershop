@@ -53,7 +53,7 @@
                     </Col>
                     <Col span="8">  
                         <Card>
-                            <div style="text-align:center">
+                            <div style="text-align:center" @click="addFellowMoneyItem">
                                 <img :src="box_img">
                                 <h3>充值</h3>
                             </div>
@@ -61,7 +61,7 @@
                     </Col>
                     <Col span="8">  
                         <Card>
-                            <div style="text-align:center">
+                            <div style="text-align:center" @click="addFellowItem">
                                 <img :src="box_img">
                                 <h3>开卡</h3>
                             </div>
@@ -93,10 +93,22 @@
             title="开单">
             <SellItem :singleItem="sellItem" :modal_type="modal_type" @closeModal="closeSellItemModal" :hairdresser_list="hairdresser_list" :assistant_list="assistant_list" :fellow_list="fellow_list"></SellItem>
         </Modal>
+        <Modal
+            v-model="fellowItemModal" footer-hide
+            title="开卡">
+            <FellowItem :singleItem="fellowItem" :modal_type="modal_type" @closeModal="closeFellowItemModal" :card_type_list="card_type_list" :employee_list="employee_list"></FellowItem>
+        </Modal>
+        <Modal
+            v-model="increaseFellowItemModal" footer-hide
+            title="充值">
+            <IncreaseFellowMoneyItem :singleItem="increaseFellowMoneyItem" :modal_type="modal_type" @closeModal="closeAddFellowMoneyItemModal" :card_type_list="card_type_list" :employee_list="employee_list" :fellow_list="fellow_list"></IncreaseFellowMoneyItem>
+        </Modal>
     </div>
 </template>
 <script>
 import SellItem from '@/components/sell-items/sell-item.vue'
+import FellowItem from '@/components/fellows/fellow-list/sell-item.vue'
+import IncreaseFellowMoneyItem from '@/components/fellows/fellow-list/add-money.vue'
 
 import w_box_img from '@/assets/images/barber-razor-scissor.png'
 import w_logo from '@/assets/images/logo.png'
@@ -104,7 +116,9 @@ const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "Index",
     components: {
-        SellItem
+        SellItem,
+        FellowItem,
+        IncreaseFellowMoneyItem
     },
     data() {
         return{
@@ -112,18 +126,39 @@ export default {
             box_img: '',
             current_user: '',
             sellItemModal: false,
+            fellowItemModal: false,
+            increaseFellowItemModal: false,
             modal_type: 'add',
             hairdresser_list: [],
             assistant_list: [],
             fellow_list: [],
+            card_type_list: [],
+            employee_list: [],
             sellItem: {
                 hairdresser: '',
                 assistant: '',
                 item_type: [],
-                money: '',
+                money: 0,
                 pay_type: '',
                 fellow: '',
                 comment: '',
+                item_number: ''
+            },
+            fellowItem: {
+                name: '',
+                phone_number: 0,
+                birthday: '',
+                card_type: '',
+                money: 0,
+                created_by: '',
+                password: '',
+                item_number: ''
+            },
+            increaseFellowMoneyItem: {
+                fellow: '',
+                card_type: '',
+                money: 0,
+                created_by: '',
                 item_number: ''
             }
         }
@@ -133,6 +168,7 @@ export default {
         this.logo = w_logo;
         this.getEmployees();
         this.getFellows();
+        this.getCardTypeList();
         this.$http.get(baseAPIUrl + "api/user").then(response => {
             this.current_user = response.data["name"];
         }, response => {
@@ -149,6 +185,25 @@ export default {
                 const res = response.data;
                 this.hairdresser_list = res['hairdresser_list'];
                 this.assistant_list = res['assistant_list'];
+                this.employee_list = res['employee_list'];
+                if(res['status'] != "success")
+                    this.$Message.error(res['message']);
+            }, response => {
+                if(response.status == 401){
+                  // this.$Message.error('请登陆');
+                  this.$router.push({
+                    name: "login"
+                  });
+                }
+            });
+
+        },
+        getCardTypeList() {
+            var post_URL = baseAPIUrl + "summarized_setting";
+
+            this.$http.get(post_URL).then(response => {
+                const res = response.data;
+                this.card_type_list = res['card_type_list'];
                 if(res['status'] != "success")
                     this.$Message.error(res['message']);
             }, response => {
@@ -195,10 +250,25 @@ export default {
               });
         },
         addSellItem(){
+            this.sellItem = {};
             this.sellItemModal = true;
         },
         closeSellItemModal(){
             this.sellItemModal = false;
+        },
+        addFellowItem(){
+            this.fellowItem = {};
+            this.fellowItemModal = true;
+        },
+        closeFellowItemModal(){
+            this.fellowItemModal = false;
+        },
+        addFellowMoneyItem(){
+            this.increaseFellowMoneyItem = {};
+            this.increaseFellowItemModal = true;
+        },
+        closeAddFellowMoneyItemModal(){
+            this.increaseFellowItemModal = false;
         }
     }
 }

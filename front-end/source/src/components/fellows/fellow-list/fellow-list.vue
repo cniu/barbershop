@@ -67,8 +67,13 @@ export default {
                 },
                 {
                     title: '生日',
-                    key: 'name',
-                    sortable: 'custom'
+                    key: 'birthday',
+                    sortable: 'custom',
+                    render: (h, params) => {
+                        return h('div', 
+                            new Date(params.row.birthday).toLocaleDateString()
+                        );
+                    }
                 },
                 {
                     title: '会员卡类型',
@@ -212,6 +217,7 @@ export default {
             this.modal_type = "modify";
             this.modal_title = "修改会员信息";
             this.singleItem = Object.assign({}, this.fellow_list_data[index]);
+            this.singleItem.birthday = new Date(this.singleItem.birthday);
         },
         changePage(page) {
             this.page = page;
@@ -238,15 +244,16 @@ export default {
                 title: '是否确认删除',
                 content: '',
                 onOk: () => {
-                    var post_URL = baseAPIUrl + "fellow" + this.fellow_list_data[index].item_number;
+                    var post_URL = baseAPIUrl + "fellow/" + this.fellow_list_data[index].phone_number;
 
                     this.$http.delete(post_URL).then(response => {
                         const res = response.data;
                         if(res['status'] != "success")
                             this.$Message.error(res['message']);
-
-                        this.$Message.success('删除成功!');
-                        this.getFellowLists();
+                        else{
+                            this.$Message.success('删除成功!');
+                            this.getFellowLists();
+                        }
                     }, response => {
                         if(response.status == 401){
                           // this.$Message.error('请登陆');
