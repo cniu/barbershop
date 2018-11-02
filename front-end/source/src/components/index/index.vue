@@ -81,7 +81,7 @@
                         <Card>
                             <div style="text-align:center">
                                 <img :src="box_img">
-                                <h3>其他</h3>
+                                <h3>其他消费</h3>
                             </div>
                         </Card>
                     </Col>

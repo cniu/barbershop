@@ -1,3 +1,3 @@
-import UserManage from './users.vue'
-export default UserManage 
+import FellowConsumptions from './fellow-consumptions.vue'
+export default FellowConsumptions 
 

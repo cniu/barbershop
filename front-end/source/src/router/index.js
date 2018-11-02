@@ -56,12 +56,21 @@ export default new Router({
 			},
 			{
 				path: '/finance_analysis',
-				name: 'finance_analysis',
+				name: 'finance-analysis',
 				meta: {
 				  title: '财务分析',
 				  hideInMenu: true
 				},
 				component: () => import('@/components/finance-analysis')
+			},
+			{
+				path: '/cash_flow',
+				name: 'cash-flow',
+				meta: {
+				  title: '财务分析',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/cash-flow')
 			},
 			{
 				path: '/fellow/list',
@@ -80,6 +89,24 @@ export default new Router({
 				  hideInMenu: true
 				},
 				component: () => import('@/components/fellows/fellow-consumptions/')
+			},
+			{
+				path: '/employee/list',
+				name: 'employee-list',
+				meta: {
+				  title: '员工列表',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/employees/employee-list/')
+			},
+			{
+				path: '/employee/salary_record',
+				name: 'salary_record',
+				meta: {
+				  title: '员工列表',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/employees/employee-money/')
 			},
 			{
 				path: '/setting/employee_type',

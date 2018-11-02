@@ -62,6 +62,17 @@
         "choosed":false
     },
     {
+        "title":"资金流",
+        "num":11,
+        "name":"cash-flow",
+        "icon":"md-cash",
+        "href":"/cash_flow",
+        "closable":true,
+        "showInTags":false,
+        "showInMenus":true,
+        "choosed":false
+    },
+    {
         "title":"员工管理",
         "name":"employee-manage-parent",
         "icon":"md-people",

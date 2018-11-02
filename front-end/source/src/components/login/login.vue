@@ -27,7 +27,6 @@ export default {
     }
   },
   created: function(){
-    console.log(this.$router);
     if (localStorage.activeMenuName)
       delete localStorage.activeMenuName
   },

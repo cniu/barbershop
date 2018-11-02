@@ -70,9 +70,10 @@ export default {
                     key: 'birthday',
                     sortable: 'custom',
                     render: (h, params) => {
-                        return h('div', 
-                            new Date(params.row.birthday).toLocaleDateString()
-                        );
+                        if(this.singleItem.birthday != "")
+                            return h('div', 
+                                new Date(params.row.birthday).toLocaleDateString()
+                            );
                     }
                 },
                 {
@@ -217,7 +218,8 @@ export default {
             this.modal_type = "modify";
             this.modal_title = "修改会员信息";
             this.singleItem = Object.assign({}, this.fellow_list_data[index]);
-            this.singleItem.birthday = new Date(this.singleItem.birthday);
+            if(this.singleItem.birthday != "")
+                this.singleItem.birthday = new Date(this.singleItem.birthday);
         },
         changePage(page) {
             this.page = page;
@@ -273,6 +275,7 @@ export default {
             this.modal_title = "开卡";
             this.singleItem = {};
             this.singleModal = true;
+            this.getFellowLists();
         }
     }
 }

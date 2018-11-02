@@ -269,21 +269,56 @@ app.add_route(Fellow.as_view(), '/fellow/<phone_number:int>')
 
 
 class Employees(HTTPMethodView):
-    # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
 
-    async def get(self, request):
-        employee_list = await request.app.mysql.query_select('select * from employee_list')
-        response_list = []
-        for raw_id, value in enumerate(employee_list):
-            n_id, name, phone_number, birthday, emplyee_type, base_salary, percentage, status, update_time = value
-            response_list.append([
-                raw_id,
-                name, phone_number, birthday, emplyee_type, base_salary, percentage, status, str(
-                    update_time)
-            ])
-        return response.json({"data": response_list})
+    async def post(self, request):
+        data = request.json if request.json is not None else {}
+        args = request.args if request.args is not None else {}
 
-app.add_route(Fellows.as_view(), '/emplyees/')
+        try:
+            search = data.get('search', '')
+            page = int(args.get('page', 1))
+            page_size = int(args.get('page_size', 20))
+            order_by = args.get('order_key', 'created_time')
+            order = args.get('order', 'desc')
+            if order.lower() not in ['desc', 'asc']:
+                order = 'desc'
+
+            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`employee_type`,''),IFNULL(`status`,'')) LIKE '%%%s%%'" % search
+
+            res_total_count = await request.app.mysql.query_select('select count(*) from employee_list %s' % (search_sql))
+            total_count = int(res_total_count[0][0])
+            if total_count <= (page - 1) * page_size:
+                page = 1
+
+            page_sql = "limit %s, %s" % ((page - 1) * page_size, page_size)
+            employee_list = await request.app.mysql.query_select('select * from employee_list %s order by %s %s %s' % (search_sql, order_by, order, page_sql))
+            response_list = []
+            for raw_id, value in enumerate(employee_list):
+                n_id, name, phone_number, first_day, employee_type, base_salary, percentage, status, created_time = value
+                response_list.append({
+                    "raw_id": raw_id + 1,
+                    "name": name,
+                    "phone_number": int(phone_number),
+                    "first_day": first_day,
+                    "employee_type": employee_type,
+                    "base_salary": int(base_salary),
+                    "percentage": float(percentage),
+                    "status": status,
+                    "created_time": str(created_time),
+                })
+        except Exception as e:
+            return response.json({
+                "data": [],
+                "page": 1,
+                "total_count": 0,
+                "status": "failed",
+                "message": "获取失败，错误信息为%s" % str(e)
+            })
+
+        return response.json({"data": response_list, "page": page, "total_count": int(total_count), "status": "success"})
+
+app.add_route(Employees.as_view(), '/employees/')
 
 
 class Employee(HTTPMethodView):
@@ -293,27 +328,33 @@ class Employee(HTTPMethodView):
         employee_list = await request.app.mysql.query_select('select * from employee_list where phone_number = "%s"' % phone_number)
         response_list = []
         for raw_id, value in enumerate(employee_list):
-            n_id, name, phone_number, birthday, emplyee_type, base_salary, percentage, status, update_time = value
-            response_list.append([
-                raw_id,
-                name, phone_number, birthday, emplyee_type, base_salary, percentage, status, str(
-                    update_time)
-            ])
+            n_id, name, phone_number, first_day, employee_type, base_salary, percentage, status, created_time = value
+            response_list.append({
+                "raw_id": raw_id + 1,
+                "name": name,
+                "phone_number": phone_number,
+                "first_day": first_day,
+                "employee_type": employee_type,
+                "base_salary": base_salary,
+                "percentage": percentage,
+                "status": status,
+                "created_time": str(created_time),
+            })
         return response.json({"data": response_list})
 
     async def post(self, request, phone_number):
         data = request.json
-        name, phone_number, birthday, emplyee_type, base_salary, percentage, status = (
+        name, phone_number, first_day, employee_type, base_salary, percentage, status = (
             data.get('name', ''),
             data.get('phone_number', phone_number),
-            data.get('birthday', ''),
-            data.get('emplyee_type', ''),
+            data.get('first_day', ''),
+            data.get('employee_type', ''),
             data.get('base_salary', ''),
             data.get('percentage', 0),
             data.get('status', 0)
         )
-        sql = 'insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
-            % (name, phone_number, birthday, emplyee_type, base_salary, percentage, status)
+        sql = 'insert into employee_list (name, phone_number, first_day, employee_type, base_salary, percentage, status) values ("%s", "%s", "%s", "%s", "%s", "%s", "%s")' \
+            % (name, phone_number, first_day, employee_type, base_salary, percentage, status)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -323,19 +364,18 @@ class Employee(HTTPMethodView):
 
     async def put(self, request, phone_number):
         data = request.json
-        name, birthday, password, card_type, money, created_by = (
+        name, phone_number, first_day, employee_type, base_salary, percentage, status = (
             data.get('name', ''),
             data.get('phone_number', phone_number),
-            data.get('birthday', ''),
-            data.get('emplyee_type', ''),
+            data.get('first_day', ''),
+            data.get('employee_type', ''),
             data.get('base_salary', ''),
-            data.get('percentage', 0),
-            data.get('status', 0)
+            data.get('percentage', ""),
+            data.get('status', "")
         )
-        money = int(money)
-        sql = 'update employee_list set name = "%s", birthday = "%s", emplyee_type = "%s", base_salary = "%s", percentage = "%s", status = "%s" \
+        sql = 'update employee_list set name = "%s", first_day = "%s", employee_type = "%s", base_salary = "%s", percentage = "%s", status = "%s" \
             where phone_number = "%s"' \
-            % (name, birthday, emplyee_type, base_salary, percentage, status, phone_number)
+            % (name, first_day, employee_type, base_salary, percentage, status, phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
@@ -344,30 +384,28 @@ class Employee(HTTPMethodView):
 
     async def delete(self, request, phone_number):
         data = request.json
-        sql = 'delete from employee_list where phone_number = "%s"' % s(
-            phone_number)
+        sql = 'delete from employee_list where phone_number = "%s"' % (phone_number)
         try:
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
             return response.json({"status": "failed", "message": "删除员工失败，错误信息为%s" % str(e)})
         return response.json({"status": "success", "message": "删除员工成功"})
 
-app.add_route(Fellow.as_view(), '/employee/<phone_number:int>')
-
+app.add_route(Employee.as_view(), '/employee/<phone_number:int>')
 
 @app.route("/summarized_employees")
 @auth.login_required(handle_no_auth=handle_no_auth)
 async def getEmployeesName(request):
-    employee_list = await request.app.mysql.query_select('select name, phone_number, emplyee_type from employee_list')
+    employee_list = await request.app.mysql.query_select('select name, phone_number, employee_type from employee_list')
     hairdresser_list, assistant_list, employees = [], [], []
     for raw_id, value in enumerate(employee_list):
-        name, phone_number, emplyee_type = value
-        if emplyee_type == "发型师":
+        name, phone_number, employee_type = value
+        if employee_type == "发型师":
             hairdresser_list.append({
                 "value": name,
                 "label": name
             })
-        elif emplyee_type == "助理":
+        elif employee_type == "助理":
             assistant_list.append({
                 "value": name,
                 "label": name
@@ -404,7 +442,7 @@ async def getFellowsInfo(request):
 
 @app.route("/summarized_setting")
 @auth.login_required(handle_no_auth=handle_no_auth)
-async def getFellowsInfo(request):
+async def getSettingInfo(request):
     fellow_types = await request.app.mysql.query_select('select card_type_name, comment from fellow_types')
     card_type_list = []
     for raw_id, value in enumerate(fellow_types):
@@ -413,7 +451,16 @@ async def getFellowsInfo(request):
             "value": card_type_name,
             "label": card_type_name
         })
+    employee_types = await request.app.mysql.query_select('select type_name, comment from employee_types')
+    employee_type_list = []
+    for raw_id, value in enumerate(employee_types):
+        type_name, comment = value
+        employee_type_list.append({
+            "value": type_name,
+            "label": type_name
+        })
     return response.json({
         "card_type_list": card_type_list,
+        "employee_type_list": employee_type_list,
         "status": "success"
     })

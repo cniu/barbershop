@@ -63,8 +63,8 @@ CREATE TABLE `barbershop`.`employee_list` (
 	id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(16) NOT NULL,
 	`phone_number` VARCHAR(32) NOT NULL,
-	`birthday` VARCHAR(32) NOT NULL,
-    `emplyee_type` varchar(20) NOT NULL,
+	`first_day` VARCHAR(100) NOT NULL,
+    `employee_type` varchar(20) NOT NULL,
     base_salary varchar(20) NOT NULL,
     percentage varchar(20) not null,
     `status` varchar(20) not null,
@@ -72,19 +72,44 @@ CREATE TABLE `barbershop`.`employee_list` (
     PRIMARY KEY(id)
 );
 
-DROP TABLE IF EXISTS `barbershop`.`fellow_histroy_list`;
-CREATE TABLE `barbershop`.`fellow_history_list` (
+DROP TABLE IF EXISTS `barbershop`.`fellow_money_history_list`;
+CREATE TABLE `barbershop`.`fellow_money_history_list` (
 	id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	phone_number VARCHAR(32) NOT NULL,
     card_type varchar(20) NOT NULL,
     expend_money int,
     remain_money int not null,
-    item_number varchar(20),
+    sell_item_number varchar(20),
     reason varchar(20) not null,
-	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
+DROP TABLE IF EXISTS `barbershop`.`employee_money_histroy_list`;
+CREATE TABLE `barbershop`.`employee_money_histroy_list` (
+	id MEDIUMINT NOT NULL AUTO_INCREMENT,
+	phone_number VARCHAR(32) NOT NULL,
+	name VARCHAR(32),
+	percentage VARCHAR(32) not null,
+    sell_item_money int,
+    money int not null,
+    sell_item_number varchar(20),
+    reason varchar(20) not null,
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
   
+DROP TABLE IF EXISTS `barbershop`.`cash_flow`;
+CREATE TABLE `barbershop`.`cash_flow` (
+	id MEDIUMINT NOT NULL AUTO_INCREMENT,
+    sell_item_number varchar(20),
+    money int not null,
+    flow_direction varchar(10) not null,
+    reason varchar(20) not null,
+    comment varchar(500),
+	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
 insert into `barbershop`.`sell_item_list` (item_number, hairdresser, assistant, item_type, money, pay_type, fellow, `comment`) values ('1010201sd12', '杨', '李', '染发', 200, '刷卡', '13121234589', "备注");
 
 insert into `barbershop`.`users` (`username`, `password`, `page_level`, `comment`) values ('admin', 'admin', '1', 'hello');
