@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uuid
+import uuid, json
 
 from sanic import response
 from modules import app, auth
@@ -8,6 +8,8 @@ from sanic.views import HTTPMethodView
 
 from modules.authorized import authorized
 from modules.login import handle_no_auth
+
+from sanic.log import logger
 
 @app.route("/fellow_money_history", methods=['POST'])
 @auth.login_required(handle_no_auth=handle_no_auth)
@@ -137,10 +139,11 @@ async def getHistory(request):
                 "raw_id": raw_id + 1,
                 "sell_item_number": sell_item_number,
                 "flow_direction": flow_direction,
-                "sell_item_money": int(sell_item_money),
                 "money": money,
                 "comment": comment,
                 "reason": reason,
+
+
                 "created_time": str(created_time),
             })
     except Exception as e:
@@ -153,3 +156,40 @@ async def getHistory(request):
         })
 
     return response.json({"data": response_list, "page": page, "total_count": int(total_count), "status": "success"})
+
+@app.route("/handle_flow/<flow_type:string>", methods=['POST'])
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def handleFlow(request, flow_type):
+    data = request.json if request.json is not None else {}
+    args = request.args if request.args is not None else {}
+
+    logger.info("Cash flow is coming!")
+    logger.info("Body is %s" % json.dumps(request.json))
+
+    flow_direction = "in"
+    if flow_type == "add_sell_item":
+        pass
+    elif flow_type == "add_fellow":
+        sell_item_number = ""
+        flow_direction = "入账"
+        money = data.get('money', 0)
+        reason = "开卡"
+        comment = "会员手机号：%s" % data.get('fellow_phone_number', '')
+        sql = 'insert into cash_flow (sell_item_number, money, flow_direction, reason, comment) values ("%s", "%s", "%s", "%s", "%s")' \
+            % (sell_item_number, money, flow_direction, reason, comment)
+        try:
+            logger.debug("New flow SQL: %s" % sql)
+            res = await request.app.mysql.query_other(sql)
+        except Exception as e:
+            logger.error("Add fellow flow failed. Reason: %s" % str(e))
+
+    elif flow_type == "add_money_fellow":
+        pass
+    elif flow_type == "product":
+        pass
+    elif flow_type == "other":
+        pass
+    else:
+        pass
+    return response.json({"status": "success"}) 
+    

@@ -72,7 +72,7 @@ export default {
                     sortable: 'custom'
                 },
                 {
-                    title: '开单时间',
+                    title: '记录时间',
                     key: 'created_time',
                     sortable: 'custom'
                 }

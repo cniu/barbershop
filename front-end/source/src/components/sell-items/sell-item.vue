@@ -23,7 +23,8 @@
                 </CheckboxGroup>
             </FormItem>
             <FormItem label="消费金额" prop="money">
-                <InputNumber style="width: 180px;" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
+                <InputNumber style="width: 180px;" v-if="modal_type == 'add'" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
+                <InputNumber style="width: 180px;" disabled v-if="modal_type != 'add'" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
             </FormItem>
             <FormItem label="付款类型" prop="pay_type">
                 <RadioGroup v-model="singleItem.pay_type">

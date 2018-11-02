@@ -23,7 +23,8 @@
                 </Select>
             </FormItem>
             <FormItem label="余额" prop="money">
-                <InputNumber style="width: 180px;" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
+                <InputNumber style="width: 180px;" v-if="modal_type == 'add'" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
+                <InputNumber style="width: 180px;" disabled v-if="modal_type != 'add'" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
             </FormItem>
             <FormItem label="开卡人" prop="created_by">
                 <Select v-model="singleItem.created_by" placeholder="请选择开卡人">
@@ -118,9 +119,20 @@ export default {
                         temp.birthday = temp.birthday.toString();
                         this.$http.post(post_URL, temp).then(response => {
                             const res = response.data;
-                            if(res['status'] != "success")
+                            if(res['status'] != "success"){
                                 this.$Message.error(res['message']);
+                            }
                             else{
+                                post_URL = baseAPIUrl + "handle_flow/add_fellow";
+                                this.$http.post(post_URL, {
+                                    "money": this.singleItem.money,
+                                    "fellow_phone_number": this.singleItem.phone_number
+                                }).then(response => {
+                                    const res = response.data;
+                                    if(res['status'] != "success")
+                                        this.$Message.error(res['message']);
+                                }, response => {
+                                });
                                 this.$Message.success('新增成功!');
                                 this.$emit('closeModal', 'submit');  
                                 this.$refs[name].resetFields();    
