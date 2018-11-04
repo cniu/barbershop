@@ -114,9 +114,13 @@ export default {
                     }
                     else if(this.$props.modal_type == "add"){
                         var post_URL = baseAPIUrl + "fellow/1";
-
                         var temp = Object.assign({}, this.singleItem);
-                        temp.birthday = temp.birthday.toString();
+                        if("birthday" in temp){
+                            temp.birthday = temp.birthday.toString();
+                        }
+                        else{
+                            temp["birthday"] = "";
+                        }
                         this.$http.post(post_URL, temp).then(response => {
                             const res = response.data;
                             if(res['status'] != "success"){
@@ -124,10 +128,7 @@ export default {
                             }
                             else{
                                 post_URL = baseAPIUrl + "handle_flow/add_fellow";
-                                this.$http.post(post_URL, {
-                                    "money": this.singleItem.money,
-                                    "fellow_phone_number": this.singleItem.phone_number
-                                }).then(response => {
+                                this.$http.post(post_URL, temp).then(response => {
                                     const res = response.data;
                                     if(res['status'] != "success")
                                         this.$Message.error(res['message']);

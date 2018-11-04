@@ -68,7 +68,7 @@ export default {
         singleItem: {
             hairdresser: '',
             assistant: '',
-            item_type: '',
+            item_type: [],
             money: 0,
             pay_type: '',
             fellow: '',
@@ -80,10 +80,10 @@ export default {
         return {
             ruleValidate: {
                 hairdresser: [
-                    { required: true, message: '请选择发型师' }
+                    { required: false, message: '请选择发型师' }
                 ],
                 assistant: [
-                    { required: true, message: '请选择助理' }
+                    { required: false, message: '请选择助理' }
                 ],
                 pay_type: [
                     { required: true, message: '请选择付款类型' }
@@ -110,6 +110,28 @@ export default {
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
+                    if(this.singleItem.pay_type != "刷卡" && this.singleItem.fellow != undefined){
+                        this.$Modal.error({
+                            title: '请确认是否填写正确',
+                            content: '<p>若选会员，请选择刷卡类别</p>'
+                        });
+                        return false;
+                    }
+                    else if(this.singleItem.pay_type == "刷卡" && this.singleItem.fellow == undefined){
+                        this.$Modal.error({
+                            title: '请确认是否填写正确',
+                            content: '<p>若选刷卡，请选择会员</p>'
+                        });
+                        return false;
+                    }
+                    else if(this.singleItem.hairdresser == undefined && this.singleItem.assistant == undefined){
+                        this.$Modal.error({
+                            title: '请确认是否填写正确',
+                            content: '<p>发型师和助理请至少选一个</p>'
+                        });
+                        return false;
+                    }
+                    console.log(this.singleItem);
                     if(this.$props.modal_type == "modify"){
 
                         var post_URL = baseAPIUrl + "sell_item/" + this.singleItem.item_number;
@@ -140,6 +162,15 @@ export default {
                             if(res['status'] != "success")
                                 this.$Message.error(res['message']);
                             else{
+                                this.singleItem.item_number = res.item_number;
+                                post_URL = baseAPIUrl + "handle_flow/add_sell_item";
+                                this.$http.post(post_URL, this.singleItem).then(response => {
+                                    const res = response.data;
+                                    if(res['status'] != "success")
+                                        this.$Message.error(res['message']);
+                                }, response => {
+                                });
+
                                 this.$Message.success('新增成功!');
                                 this.$emit('closeModal', 'submit');
                                 this.$refs[name].resetFields();  

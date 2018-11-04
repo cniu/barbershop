@@ -4,30 +4,30 @@
             <FormItem label="单号" prop="item" style="display: none;">
                 <Input disabled v-model="singleItem.item_number"></Input>
             </FormItem>
-            <FormItem label="会员" prop="fellow">
-                <Row>
-                    <Col span="16">
-                        <Select v-model="singleItem.fellow" style="width: 180px;" filterable>
-                            <Option v-for="(option, index) in fellow_list" :value="option.value" :key="index" >{{option.label}}</Option>
-                        </Select>
-                    </Col>
-                    <Col span="8">    
-                        <Button type="primary" size="small" @click="showFellowInfo">查看会员信息</Button>
-                    </Col>
-                </Row>                
+            <FormItem label="类型" prop="flow_direction">
+                <RadioGroup v-model="singleItem.flow_direction">
+                    <Radio label="出账">出账</Radio>
+                    <Radio label="入账">入账</Radio>
+                </RadioGroup>
             </FormItem>
-            <FormItem label="卡类型" prop="card_type">
-                <Select v-model="singleItem.card_type" placeholder="请选择会员卡类型">
-                    <Option v-for="(option, index) in card_type_list" :value="option.value" :key="index">{{option.label}}</Option>
-                </Select>
-            </FormItem>
-            <FormItem label="充值金额" prop="money">
+            <FormItem label="金额" prop="money">
                 <InputNumber style="width: 180px;" v-model="singleItem.money" placeholder="请输入金额"></InputNumber>
+            </FormItem>
+            <FormItem label="条目类别" prop="item_type">
+                <Select v-model="singleItem.item_type" placeholder="请选择条目类别">
+                    <Option value="工资">工资</Option>
+                    <Option value="房租">房租</Option>
+                    <Option value="日常费用">日常费用</Option>
+                    <Option value="其他">其他</Option>
+                </Select>
             </FormItem>
             <FormItem label="操作员" prop="created_by">
                 <Select v-model="singleItem.created_by" placeholder="请选择操作员">
                     <Option v-for="(option, index) in employee_list" :value="option.value" :key="index">{{option.label}}</Option>
                 </Select>
+            </FormItem>
+            <FormItem label="备注" prop="comment">
+                <Input v-model="singleItem.comment" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="可以输入备注以便记录"></Input>
             </FormItem>
             <FormItem>
                 <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
@@ -39,29 +39,27 @@
 <script>
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
-    name: "AddFellowMoneyItem",
+    name: "AddFlow",
     props: {
         modal_type: '',
-        card_type_list: '',
         employee_list: '',
-        fellow_list: '',
-        card_type_list: '',
         singleItem: {
-            fellow: '',
-            card_type: '',
+            flow_direction: '',
+            item_type: '',
             money: 0,
             created_by: '',
-            item_number: ''
+            item_number: '',
+            comment: ''
         }
     },
     data() {
         return {
             ruleValidate: {
-                fellow: [
-                    { required: true, message: '请选择会员手机号'},
+                flow_direction: [
+                    { required: true, message: '请选择'},
                 ],
-                card_type: [
-                    { required: true, message: '请选择卡类型' }
+                item_type: [
+                    { required: true, message: '请选择类型' }
                 ],
                 money: [
                     { required: true, message: '请填写金额' },
@@ -69,34 +67,26 @@ export default {
                 ],
                 created_by: [
                     { required: true, message: '请选择开卡人' }
+                ],
+                comment: [
+                    { required: true, message: '请输入备注', trigger: 'blur' },
+                    { type: 'string', max: 200, message: '太长不易读', trigger: 'blur' }
                 ]
             }
         }
     },
     methods: {
-        showFellowInfo () {
-            const fellow_info = this.fellow_list.filter(item => item['value'] == this.singleItem.fellow);
-            const content = 
-                '<p>姓名：' + fellow_info[0]['name'] + '</p>' +
-                '<p>卡类型：' + fellow_info[0]['card_type'] + '</p>' +
-                '<p>余额：' + fellow_info[0]['money'] + '</p>' + 
-                '<p>手机号：' + fellow_info[0]['value'] + '</p>';
-            this.$Modal.success({
-                title: "会员信息",
-                content: content
-            });
-        },
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    var post_URL = baseAPIUrl + "handle_flow/add_money_fellow";
+                    var post_URL = baseAPIUrl + "handle_flow/single_item";
 
                     this.$http.post(post_URL, this.singleItem).then(response => {
                         const res = response.data;
                         if(res['status'] != "success")
                             this.$Message.error(res['message']);
                         else{
-                            this.$Message.success('充值成功!');
+                            this.$Message.success('添加成功!');
                             this.$emit('closeModal', 'submit');  
                             this.$refs[name].resetFields();    
                         }

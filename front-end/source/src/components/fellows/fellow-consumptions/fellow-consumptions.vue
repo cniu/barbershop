@@ -52,7 +52,7 @@ export default {
                     sortable: 'custom'
                 },
                 {
-                    title: '余额',
+                    title: '消费后余额',
                     key: 'remain_money',
                     sortable: 'custom'
                 },

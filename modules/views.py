@@ -57,7 +57,7 @@ class SellItem(HTTPMethodView):
         except Exception as e:
             return response.json({"status": "failed", "message": "开单失败，错误信息为%s" % str(e)})
 
-        return response.json({"status": "success", "message": "开单成功"})
+        return response.json({"status": "success", "message": "开单成功", "item_number": item_number})
 
     async def put(self, request, item_number):
         data = request.json

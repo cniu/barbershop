@@ -1,7 +1,10 @@
 <template>
     <div>
-        <Row type="flex" justify="end" class="code-row-bg">
-            <Col span="8">
+        <Row type="flex" justify="end" class="code-row-bg" style="padding: 10px;">
+            <Col span="4">
+                <Button type="primary" shape="circle" @click="addItem">添加其他出账入账记录</Button>
+            </Col>
+            <Col span="8" offset="12">
                 <Input search enter-button placeholder="请输入关键字搜索" style="width: 300px;float: right;" @on-search="handleSearch" v-model="search"/>
             </Col>
         </Row>
@@ -15,14 +18,28 @@
                 <Page :total="total_count" show-total show-sizer :current="page" :page-size="page_size" :page-size-opts=[20,50,100,500] @on-change="changePage" @on-page-size-change="changePageSize" style="float: right;"/>
             </Col>
         </Row>
+        <Modal
+            v-model="singleModal" footer-hide
+            :title="modal_title">
+            <AddFlow :singleItem="singleItem" :modal_type="modal_type" @closeModal="closeModal" :employee_list="employee_list"></AddFlow>
+        </Modal>
     </div>
 </template>
 <script>
+import AddFlow from './in-out.vue'
 const baseAPIUrl = process.env.baseAPIUrl;
 export default {
     name: "CashFlow",
+    components: {
+        AddFlow
+    },
     data () {
         return {
+            singleItem: {},
+            modal_type: "add",
+            modal_title: "添加其他出账入账记录",
+            singleModal: false,
+            employee_list: "",
             search: '',
             page: 1,
             page_size: 20,
@@ -75,6 +92,7 @@ export default {
     },
     created: function() {
         this.getItems();
+        this.getEmployees();
     },
     methods: {
         getItems() {
@@ -100,6 +118,24 @@ export default {
                 }
             });
         },
+        getEmployees() {
+            var post_URL = baseAPIUrl + "summarized_employees";
+
+            this.$http.get(post_URL).then(response => {
+                const res = response.data;
+                this.employee_list = res['employee_list'];
+                if(res['status'] != "success")
+                    this.$Message.error(res['message']);
+            }, response => {
+                if(response.status == 401){
+                  // this.$Message.error('请登陆');
+                  this.$router.push({
+                    name: "login"
+                  });
+                }
+            });
+
+        },
         handleSearch(value) {
             this.search = value;
             this.getItems();
@@ -115,6 +151,17 @@ export default {
         sortChange(value){
             this.order = value.order;
             this.order_key = value.key;
+            this.getItems();
+        },
+        addItem() {
+            this.modal_type = "add";
+            this.modal_title = "添加其他出账入账记录";
+            this.singleItem = {};
+            this.singleModal = true;
+            this.getItems();
+        },
+        closeModal(text) {
+            this.singleModal = false;
             this.getItems();
         }
     }

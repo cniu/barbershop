@@ -70,7 +70,7 @@ export default {
                     key: 'birthday',
                     sortable: 'custom',
                     render: (h, params) => {
-                        if(this.singleItem.birthday != "")
+                        if(params.row.birthday != "")
                             return h('div', 
                                 new Date(params.row.birthday).toLocaleDateString()
                             );

@@ -71,7 +71,7 @@
                 <Row :gutter="120" class="row_box">
                     <Col span="8">  
                         <Card>
-                            <div style="text-align:center">
+                            <div style="text-align:center" @click="addProductSellItem">
                                 <img :src="box_img">
                                 <h3>产品消费</h3>
                             </div>
@@ -79,7 +79,7 @@
                     </Col>
                     <Col span="8">  
                         <Card>
-                            <div style="text-align:center">
+                            <div style="text-align:center" @click="addOtherSellItem">
                                 <img :src="box_img">
                                 <h3>其他消费</h3>
                             </div>
@@ -103,12 +103,24 @@
             title="充值">
             <IncreaseFellowMoneyItem :singleItem="increaseFellowMoneyItem" :modal_type="modal_type" @closeModal="closeAddFellowMoneyItemModal" :card_type_list="card_type_list" :employee_list="employee_list" :fellow_list="fellow_list"></IncreaseFellowMoneyItem>
         </Modal>
+        <Modal
+            v-model="productSellItemModal" footer-hide
+            title="产品消费">
+            <ProductSellItem :singleItem="productSellItem" :modal_type="modal_type" @closeModal="closeProductSellItemModal" :employee_list="employee_list" :fellow_list="fellow_list"></ProductSellItem>
+        </Modal>
+        <Modal
+            v-model="otherSellItemModal" footer-hide
+            title="其他消费">
+            <OtherSellItem :singleItem="otherSellItem" :modal_type="modal_type" @closeModal="closeOtherSellItemModal" :employee_list="employee_list" :fellow_list="fellow_list"></OtherSellItem>
+        </Modal>
     </div>
 </template>
 <script>
 import SellItem from '@/components/sell-items/sell-item.vue'
 import FellowItem from '@/components/fellows/fellow-list/sell-item.vue'
 import IncreaseFellowMoneyItem from '@/components/fellows/fellow-list/add-money.vue'
+import ProductSellItem from '@/components/product-sell/sell-item.vue'
+import OtherSellItem from '@/components/other-sell/sell-item.vue'
 
 import w_box_img from '@/assets/images/barber-razor-scissor.png'
 import w_logo from '@/assets/images/logo.png'
@@ -118,7 +130,9 @@ export default {
     components: {
         SellItem,
         FellowItem,
-        IncreaseFellowMoneyItem
+        IncreaseFellowMoneyItem,
+        ProductSellItem,
+        OtherSellItem
     },
     data() {
         return{
@@ -128,6 +142,8 @@ export default {
             sellItemModal: false,
             fellowItemModal: false,
             increaseFellowItemModal: false,
+            productSellItemModal: false,
+            otherSellItemModal: false,
             modal_type: 'add',
             hairdresser_list: [],
             assistant_list: [],
@@ -160,6 +176,22 @@ export default {
                 money: 0,
                 created_by: '',
                 item_number: ''
+            },
+            productSellItem: {
+                fellow: '',
+                pay_type: '',
+                money: 0,
+                created_by: '',
+                comment: '',
+                item_number: ''
+            },
+            otherSellItem: {
+                fellow: '',
+                pay_type: '',
+                money: 0,
+                created_by: '',
+                item_number: '',
+                comment: ''
             }
         }
     },
@@ -251,6 +283,7 @@ export default {
         },
         addSellItem(){
             this.sellItem = {};
+            this.sellItem.birthday = "";
             this.sellItemModal = true;
         },
         closeSellItemModal(){
@@ -269,7 +302,21 @@ export default {
         },
         closeAddFellowMoneyItemModal(){
             this.increaseFellowItemModal = false;
-        }
+        },
+        addProductSellItem(){
+            this.productSellItem = {};
+            this.productSellItemModal = true;
+        },
+        closeProductSellItemModal(){
+            this.productSellItemModal = false;
+        },
+        addOtherSellItem(){
+            this.otherSellItem = {};
+            this.otherSellItemModal = true;
+        },
+        closeOtherSellItemModal(){
+            this.otherSellItemModal = false;
+        },
     }
 }
 </script>
