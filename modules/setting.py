@@ -338,7 +338,7 @@ class Users(HTTPMethodView):
             if order.lower() not in ['desc', 'asc']:
                 order = 'desc'
 
-            search_sql = "where CONCAT(IFNULL(`username`,''),IFNULL(`password`,''),IFNULL(`page_level`,''),IFNULL(`comment`,'')) LIKE '%%%s%%'" % search
+            search_sql = "where username != 'admin' and CONCAT(IFNULL(`username`,''),IFNULL(`password`,''),IFNULL(`page_level`,''),IFNULL(`comment`,'')) LIKE '%%%s%%'" % search
 
             res_total_count = await request.app.mysql.query_select('select count(*) from users %s' % (search_sql))
             total_count = int(res_total_count[0][0])

@@ -19,16 +19,29 @@ export default {
       dom: null
     }
   },
+  watch: {
+    value: function(val){
+      this.draw();
+    }
+  },
   methods: {
     resize () {
-      this.dom.resize()
+      this.dom.resize();
     }
   },
   mounted () {
-    this.$nextTick(() => {
+  },
+  methods: {
+    draw: function(){
       let xAxisData = Object.keys(this.value)
       let seriesData = Object.values(this.value)
       let option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross'
+          }
+        },
         title: {
           text: this.text,
           subtext: this.subtext,
@@ -49,7 +62,7 @@ export default {
       this.dom = echarts.init(this.$refs.dom, 'tdTheme')
       this.dom.setOption(option)
       on(window, 'resize', this.resize)
-    })
+    }
   },
   beforeDestroy () {
     off(window, 'resize', this.resize)

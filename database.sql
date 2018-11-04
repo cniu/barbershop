@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS `barbershop`.`users`;
 CREATE TABLE `barbershop`.`users` (
 	id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`username` VARCHAR(16) NOT NULL,
-	`password` VARCHAR(10) NOT NULL,
+	`password` VARCHAR(100) NOT NULL,
 	`page_level` int NOT NULL,
 	`comment` varchar(200),
 	`created_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -122,3 +122,5 @@ update fellow_list set name = "Neal", birthday = "Thu Nov 01 2018 00:00:00 GMT+0
 insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("牛", "1392239", "", "店长", "1000", "0.5", "在职");
 insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("委任为", "13922391", "", "发型师", "1000", "0.5", "在职");
 insert into employee_list (name, phone_number, birthday, emplyee_type, base_salary, percentage, status) values ("手动阀手动阀", "121423", "", "助理", "1000", "0.5", "在职");
+
+select * from sell_item_list where to_days(created_time) = to_days(now());
