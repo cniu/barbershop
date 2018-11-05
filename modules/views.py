@@ -403,16 +403,16 @@ async def getEmployeesName(request):
         if employee_type == "发型师":
             hairdresser_list.append({
                 "value": name,
-                "label": name
+                "label": "%s(%s)" % (name, phone_number)
             })
         elif employee_type == "助理":
             assistant_list.append({
                 "value": name,
-                "label": name
+                "label": "%s(%s)" % (name, phone_number)
             })
         employees.append({
                 "value": name,
-                "label": name
+                "label": "%s(%s)" % (name, phone_number)
             })
     return response.json({
         "hairdresser_list": hairdresser_list, 
@@ -430,7 +430,7 @@ async def getFellowsInfo(request):
         name, phone_number, money, card_type = value
         response_list.append({
             "value": phone_number,
-            "label": phone_number,
+            "label": "%s(%s)" % (name, phone_number),
             "name": name,
             "money": money,
             "card_type": card_type
