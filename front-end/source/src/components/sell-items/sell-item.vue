@@ -18,7 +18,7 @@
                 <CheckboxGroup v-model="singleItem.item_type">
                     <Checkbox label="染发"></Checkbox>
                     <Checkbox label="烫发"></Checkbox>
-                    <Checkbox label="假发"></Checkbox>
+                    <Checkbox label="剪发"></Checkbox>
                     <Checkbox label="洗头"></Checkbox>
                 </CheckboxGroup>
             </FormItem>
