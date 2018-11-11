@@ -8,7 +8,7 @@ from sanic_auth import Auth
 from sanic_cors import CORS, cross_origin
 from sanic_session import Session, InMemorySessionInterface
 
-session = Session(app, interface=InMemorySessionInterface())
+session = Session(app, interface=InMemorySessionInterface(expiry=14400))
 
 app.config.AUTH_LOGIN_ENDPOINT = 'login'
 app.config['CORS_AUTOMATIC_OPTIONS'] = True
