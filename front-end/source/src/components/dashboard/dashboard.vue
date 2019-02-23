@@ -23,12 +23,17 @@
       </i-col>
       <i-col :md="24" :lg="8" style="margin-bottom: 20px;">
         <Card shadow>
-          <chart-pie style="height: 300px;" :value="cash_flow_in_reasons" text="营业额"></chart-pie>
+          <chart-pie style="height: 300px;" :value="cash_flow_in_reasons" text="今日营业消费额"></chart-pie>
         </Card>
       </i-col>
       <i-col :md="24" :lg="24" style="margin-bottom: 20px;">
         <Card shadow>
-          <chart-bar style="height: 300px;" :value="week_sell_numbers" text="近七天营业额"/>
+          <chart-bar style="height: 300px;" :value="week_sell_numbers" text="近七天营业消费额"/>
+        </Card>
+      </i-col>
+      <i-col :md="24" :lg="24" style="margin-bottom: 20px;">
+        <Card shadow>
+          <chart-bar style="height: 300px;" :value="week_sell_money" text="近七天净收入"/>
         </Card>
       </i-col>
     </Row>
@@ -58,14 +63,15 @@ export default {
         { title: '今日新增会员', icon: 'md-person-add', count: 0, color: '#2d8cf0' },
         { title: '今日开单数量', icon: 'md-locate', count: 0, color: '#19be6b' },
         { title: '会员消费次数', icon: 'md-help-circle', count: 0, color: '#ff9900' },
-        { title: '今日营业额', icon: 'md-share', count: 0, color: '#ed3f14' },
+        { title: '今日营业消费额', icon: 'md-share', count: 0, color: '#ed3f14' },
         { title: '今日净入账', icon: 'md-chatbubbles', count: 0, color: '#E46CBB' },
         { title: '今日净支出', icon: 'md-map', count: 0, color: '#9A66E4' }
       ],
       sell_money_items_type: [],
       sell_item_type: [],
       cash_flow_in_reasons: [],
-      week_sell_numbers: {}
+      week_sell_numbers: {},
+      week_sell_money: {}
     }
   },
   created: function(){
@@ -91,6 +97,7 @@ export default {
               this.sell_item_type = res['data']['sell_item_type'];
               this.cash_flow_in_reasons = res['data']['cash_flow_in_reasons'];
               this.week_sell_numbers = res['data']['week_sell_numbers'];
+              this.week_sell_money = res['data']['week_sell_money'];
               if(res['status'] != "success")
                   this.$Message.error(res['message']);
           }, response => {

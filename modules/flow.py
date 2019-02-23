@@ -344,7 +344,7 @@ async def handleFlow(request, flow_type):
 
         if fellow_phone_number == "":
             flow_direction = "入账"
-            comment = "操作人：%s（备注：%s）" % (created_by, user_commit)
+            comment = "操作人：%s（备注：%s, 付款类别：%s）" % (created_by, user_commit, pay_type)
             sql = 'insert into cash_flow (sell_item_number, money, flow_direction, reason, comment) values ("%s", "%s", "%s", "%s", "%s")' \
                 % (item_number, sell_money, flow_direction, reason, comment)
             try:
@@ -368,7 +368,7 @@ async def handleFlow(request, flow_type):
             logger.info('Add fellow money history successfully!')
 
             flow_direction = "不入账"
-            comment = "会员%s其他消费，操作人：%s（备注：%s）" % (fellow_phone_number, created_by, user_commit)
+            comment = "会员%s其他消费，操作人：%s（备注：%s, 付款类别：%s）" % (fellow_phone_number, created_by, user_commit, pay_type)
             sql = 'insert into cash_flow (sell_item_number, money, flow_direction, reason, comment) values ("%s", "%s", "%s", "%s", "%s")' \
                 % (item_number, sell_money, flow_direction, reason, comment)
             try:
