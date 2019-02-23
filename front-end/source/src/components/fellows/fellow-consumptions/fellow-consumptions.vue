@@ -42,6 +42,11 @@ export default {
                     sortable: 'custom'
                 },
                 {
+                    title: '会员姓名',
+                    key: 'name',
+                    sortable: 'custom'
+                },
+                {
                     title: '会员卡类型',
                     key: 'card_type',
                     sortable: 'custom'

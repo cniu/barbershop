@@ -33,9 +33,9 @@ async def getData(request):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         if "入账" in flow_direction:
             sell_number += int(money)
+            cash_flow_in_reasons.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
             if flow_direction == "入账":
                 sell_money += int(money)
-                cash_flow_in_reasons.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
         if flow_direction == "出账":
             cost += int(money)
 
@@ -47,7 +47,7 @@ async def getData(request):
         if "入账" in flow_direction:
             week_sell_numbers[created_time[0:10]] += int(money)
 
-    res = await request.app.mysql.query_select('select count(*) from fellow_list where to_days(created_time) = to_days(now())')
+    res = await request.app.mysql.query_select('select count(*) from fellow_money_history_list where reason = "开卡" and to_days(created_time) = to_days(now())')
     new_count_fellow = res[0][0]
 
     return response.json({
@@ -89,9 +89,9 @@ async def getData(request):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         if "入账" in flow_direction:
             sell_number += int(money)
+            cash_flow_in_reasons.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
             if flow_direction == "入账":
                 sell_money += int(money)
-                cash_flow_in_reasons.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
         if flow_direction == "出账":
             cost += int(money)
 
@@ -103,7 +103,7 @@ async def getData(request):
         if "入账" in flow_direction:
             year_sell_numbers[created_time[0:7]] += int(money)
 
-    res = await request.app.mysql.query_select('select count(*) from fellow_list where YEAR(created_time)=YEAR(NOW())')
+    res = await request.app.mysql.query_select('select count(*) from fellow_money_history_list where reason = "开卡" and YEAR(created_time)=YEAR(NOW())')
     new_count_fellow = res[0][0]
 
     return response.json({

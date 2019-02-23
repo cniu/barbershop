@@ -58,7 +58,7 @@ export default {
         { title: '今日新增会员', icon: 'md-person-add', count: 0, color: '#2d8cf0' },
         { title: '今日开单数量', icon: 'md-locate', count: 0, color: '#19be6b' },
         { title: '会员消费次数', icon: 'md-help-circle', count: 0, color: '#ff9900' },
-        { title: '今日消费总额', icon: 'md-share', count: 0, color: '#ed3f14' },
+        { title: '今日营业额', icon: 'md-share', count: 0, color: '#ed3f14' },
         { title: '今日净入账', icon: 'md-chatbubbles', count: 0, color: '#E46CBB' },
         { title: '今日净支出', icon: 'md-map', count: 0, color: '#9A66E4' }
       ],

@@ -108,7 +108,7 @@ class SellItems(HTTPMethodView):
             if order.lower() not in ['desc', 'asc']:
                 order = 'desc'
 
-            search_sql = "where CONCAT(IFNULL(`item_number`,''),IFNULL(`hairdresser`,''),IFNULL(`assistant`,''),IFNULL(`item_type`,''),IFNULL(`pay_type`,''),IFNULL(`comment`,''),IFNULL(`fellow`,'')) LIKE '%%%s%%'" % search
+            search_sql = "where CONCAT(IFNULL(`item_number`,''),IFNULL(`hairdresser`,''),IFNULL(`assistant`,''),IFNULL(`item_type`,''),IFNULL(`pay_type`,''),IFNULL(`comment`,''),IFNULL(`fellow`,''),IFNULL(`created_time`,'')) LIKE '%%%s%%'" % search
 
             res_total_count = await request.app.mysql.query_select('select count(*) from sell_item_list %s' % (search_sql))
             total_count = int(res_total_count[0][0])
@@ -161,7 +161,7 @@ class Fellows(HTTPMethodView):
             if order.lower() not in ['desc', 'asc']:
                 order = 'desc'
 
-            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`card_type`,''),IFNULL(`created_by`,'')) LIKE '%%%s%%'" % search
+            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`card_type`,''),IFNULL(`created_by`,''),IFNULL(`created_time`,'')) LIKE '%%%s%%'" % search
 
             res_total_count = await request.app.mysql.query_select('select count(*) from fellow_list %s' % (search_sql))
             total_count = int(res_total_count[0][0])
@@ -284,7 +284,7 @@ class Employees(HTTPMethodView):
             if order.lower() not in ['desc', 'asc']:
                 order = 'desc'
 
-            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`employee_type`,''),IFNULL(`status`,'')) LIKE '%%%s%%'" % search
+            search_sql = "where CONCAT(IFNULL(`name`,''),IFNULL(`phone_number`,''),IFNULL(`employee_type`,''),IFNULL(`status`,''),IFNULL(`created_time`,'')) LIKE '%%%s%%'" % search
 
             res_total_count = await request.app.mysql.query_select('select count(*) from employee_list %s' % (search_sql))
             total_count = int(res_total_count[0][0])
