@@ -16,6 +16,10 @@ async def getData(request):
     items_count, fellow_item_count, sell_number, sell_money, cost = 0, 0, 0, 0, 0
     sell_money_items_type, sell_item_type = {}, {}
     cash_flow_in_reasons = {}
+    summary_sell_money = {}
+    hairdresser_sell_number = {}
+    assistant_sell_number = {}
+
     sell_type_list = ['开单', '产品消费', '其他消费']
 
     week_sell_numbers = {}
@@ -30,6 +34,12 @@ async def getData(request):
         sell_money_items_type.setdefault(pay_type, {"value": 0, "name": pay_type})["value"] += int(money)
         sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
 
+        hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
+        if assistant.strip() == "":
+            assistant_sell_number.setdefault("发型师", {"value": 0, "name": "发型师"})["value"] += int(money)
+        else:
+            assistant_sell_number.setdefault(assistant, {"value": 0, "name": assistant})["value"] += int(money)
+
     cash_flow = await request.app.mysql.query_select('select * from cash_flow where to_days(created_time) = to_days(now())')
     for raw_id, value in enumerate(cash_flow):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
@@ -37,8 +47,17 @@ async def getData(request):
             if reason in sell_type_list:
                 sell_number += int(money)
                 cash_flow_in_reasons.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
+            if reason in sell_type_list[1:]:
+                hander_person = comment.split('：')[1].split('（')[0]
+                if hander_person in hairdresser_sell_number:
+                    hairdresser_sell_number.setdefault(hander_person, {"value": 0, "name": hander_person})["value"] += int(money)
+                elif hander_person in assistant_sell_number:
+                    assistant_sell_number.setdefault(hander_person, {"value": 0, "name": hander_person})["value"] += int(money)
+
             if flow_direction == "入账":
                 sell_money += int(money)
+                summary_sell_money.setdefault(reason, {"value": 0, "name": reason})["value"] += int(money)
+
         if flow_direction == "出账":
             cost += int(money)
 
@@ -67,9 +86,12 @@ async def getData(request):
             "cost": cost,
             "sell_money_items_type": list(sell_money_items_type.values()),
             "sell_item_type": list(sell_item_type.values()),
+            "cash_flow_in_reasons": list(cash_flow_in_reasons.values()),
+            "hairdresser_sell_number": list(hairdresser_sell_number.values()),
+            "assistant_sell_number": list(assistant_sell_number.values()),
+            "summary_sell_money": list(summary_sell_money.values()),
             "week_sell_numbers": week_sell_numbers,
-            "week_sell_money": week_sell_money,
-            "cash_flow_in_reasons": list(cash_flow_in_reasons.values())
+            "week_sell_money": week_sell_money
         },
         "status": "success"
     })

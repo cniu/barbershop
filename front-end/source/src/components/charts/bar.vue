@@ -56,6 +56,7 @@ export default {
         },
         series: [{
           data: seriesData,
+          itemStyle : { normal: {label : {show: true}}},
           type: 'bar'
         }]
       }
