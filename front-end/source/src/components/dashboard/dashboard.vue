@@ -43,12 +43,12 @@
       </i-col>
       <i-col :md="24" :lg="24" style="margin-bottom: 20px;">
         <Card shadow>
-          <chart-bar style="height: 300px;" :value="week_sell_numbers" text="近七天营业消费额"/>
+          <chart-bar style="height: 300px;" :value="week_sell_numbers" text="近30天营业消费额"/>
         </Card>
       </i-col>
       <i-col :md="24" :lg="24" style="margin-bottom: 20px;">
         <Card shadow>
-          <chart-bar style="height: 300px;" :value="week_sell_money" text="近七天净收入"/>
+          <chart-bar style="height: 300px;" :value="week_sell_money" text="近30天净收入"/>
         </Card>
       </i-col>
     </Row>
