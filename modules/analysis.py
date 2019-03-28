@@ -61,7 +61,7 @@ async def getData(request):
         if flow_direction == "出账":
             cost += int(money)
 
-    cash_flow = await request.app.mysql.query_select('select * from cash_flow where DATE_SUB(CURDATE(), INTERVAL 7 DAY) <= date(created_time)')
+    cash_flow = await request.app.mysql.query_select('select * from cash_flow where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= date(created_time)')
     for raw_id, value in enumerate(cash_flow):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         created_time = str(created_time)
