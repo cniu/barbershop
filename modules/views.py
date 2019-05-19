@@ -58,8 +58,10 @@ class SellItem(HTTPMethodView):
             return response.json({"status": "failed", "message": "开单失败，错误信息为%s" % str(e)})
 
         return response.json({"status": "success", "message": "开单成功", "item_number": item_number})
-
-    async def put(self, request, item_number):
+    
+    @staticmethod
+    @authorized(1)
+    async def put(request, item_number):
         data = request.json
 
         hairdresser = data.get('hairdresser', '')
@@ -85,9 +87,11 @@ class SellItem(HTTPMethodView):
 
     def patch(self, request):
         return response.text('I am patch method')
-
-    def delete(self, request):
-        return response.text('I am delete method')
+    
+    @staticmethod
+    @authorized(1)
+    async def delete(request, item_number):
+        return response.json({"status": "success", "message": "删除成功"})
 
 app.add_route(SellItem.as_view(), '/sell_item/<item_number:string>')
 

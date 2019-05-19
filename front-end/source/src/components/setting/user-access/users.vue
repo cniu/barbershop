@@ -135,7 +135,13 @@ export default {
                 if(res['status'] != "success")
                     this.$Message.error(res['message']);
             }, response => {
-                if(response.status == 401){
+                if(response.status == 403){
+                    this.$Message.error('权限不足，请申请权限');
+                    // this.$router.push({
+                    //     name: "dashboard"
+                    // });
+                }
+                else if(response.status == 401){
                   // this.$Message.error('请登陆');
                   this.$router.push({
                     name: "login"
@@ -187,8 +193,14 @@ export default {
 
                         this.$Message.success('删除成功!');
                         this.getUsers();
-                    }, response => {
-                        if(response.status == 401){
+                    }, response => { 
+                        if(response.status == 403){
+                            this.$Message.error('权限不足，请申请权限');
+                            // this.$router.push({
+                            //     name: "dashboard"
+                            // });
+                        }
+                        else if(response.status == 401){
                           // this.$Message.error('请登陆');
                           this.$router.push({
                             name: "login"

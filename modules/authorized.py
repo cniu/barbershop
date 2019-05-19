@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from functools import wraps
+from sanic.log import logger
 from sanic.response import json
+from modules import app, auth
 
 def check_request_for_authorization_status(request, page_type):
-    if page_type == "main_login":
-        request_data = request.json
-        if request_data.get("username", "") == "admin" and request_data.get("password", "") == "chongshangfayi":
-            return True
-        else:
-            return False
-    return True
+    current_user = auth.current_user(request)
+    if current_user is not None and current_user.level > page_type:
+        return True
+    return False
 
 def authorized(page_type):
     def decorator(f):
@@ -27,7 +26,7 @@ def authorized(page_type):
                 return response
             else:
                 # the user is not authorized. 
-                return json({'status': 'not_authorized'}, 403)
+                return json({'status': 'no_access', 'message': 'please ask for one approve'}, 403)
         return decorated_function
     return decorator
 

@@ -3,7 +3,7 @@
 import uuid
 
 from sanic import response
-from modules import app, auth
+from modules import app, auth, authorized
 from sanic.views import HTTPMethodView
 
 from modules.login import handle_no_auth
@@ -249,7 +249,7 @@ class EmployeeTypes(HTTPMethodView):
 app.add_route(EmployeeTypes.as_view(), '/setting/employee_types/')
 
 class User(HTTPMethodView):
-    decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth), authorized.authorized(1)]
 
     async def get(self, request, item_number):
         data = request.json
@@ -323,7 +323,7 @@ class User(HTTPMethodView):
 app.add_route(User.as_view(), '/setting/user/<item_number:string>')
 
 class Users(HTTPMethodView):
-    # decorators = [auth.login_required(handle_no_auth=handle_no_auth)]
+    decorators = [auth.login_required(handle_no_auth=handle_no_auth), authorized.authorized(1)]
 
     async def post(self, request):
         data = request.json if request.json is not None else {}

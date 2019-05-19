@@ -119,17 +119,17 @@ export default {
                                     }
                                 }
                             }, '编辑'),
-                            // h('Button', {
-                            //     props: {
-                            //         type: 'error',
-                            //         size: 'small'
-                            //     },
-                            //     on: {
-                            //         click: () => {
-                            //             this.remove(params.index)
-                            //         }
-                            //     }
-                            // }, '删除')
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.removeItem(params.index)
+                                    }
+                                }
+                            }, '删除')
                         ]);
                     }
                 }
@@ -221,8 +221,39 @@ export default {
             this.singleItem = Object.assign({}, this.sell_items_data[index]);
             this.singleItem['item_type'] = this.singleItem['item_type'].split(',');
         },
-        remove (index) {
-            this.sell_items_data.splice(index, 1);
+        removeItem(index) {
+            this.$Modal.confirm({
+                title: '是否确认删除',
+                content: '',
+                onOk: () => {
+                    var post_URL = baseAPIUrl + "sell_item/" + this.sell_items_data[index].item_number;
+
+                    this.$http.delete(post_URL).then(response => {
+                        const res = response.data;
+                        if(res['status'] != "success")
+                            this.$Message.error(res['message']);
+
+                        this.$Message.success('删除成功!');
+                        this.getUsers();
+                    }, response => {
+                        if(response.status == 403){
+                            this.$Message.error('权限不足，请申请权限');
+                            // this.$router.push({
+                            //     name: "dashboard"
+                            // });
+                        }
+                        else if(response.status == 401){
+                          // this.$Message.error('请登陆');
+                          this.$router.push({
+                            name: "login"
+                          });
+                        }
+                    });
+                },
+                onCancel: () => {
+                    // this.$Message.info('Clicked cancel');
+                }
+            });
         },
         changePage(page) {
             this.page = page;
