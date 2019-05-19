@@ -32,7 +32,7 @@
                 </Select>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
+                <Button type="primary" @click="handleSubmit('singleItem')" :disabled=submit_button>提交</Button>
                 <Button @click="handleReset('singleItem')" style="margin-left: 8px">重置</Button>
             </FormItem>
         </Form>
@@ -46,6 +46,7 @@ export default {
         modal_type: '',
         card_type_list: '',
         employee_list: '',
+        submit_button: false,
         singleItem: {
             name: '',
             phone_number: '',
@@ -88,6 +89,7 @@ export default {
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
+                    this.$props.submit_button = true;
                     if(this.$props.modal_type == "modify"){
 
                         var post_URL = baseAPIUrl + "fellow/" + this.singleItem.phone_number;
@@ -104,6 +106,12 @@ export default {
                                 this.$refs[name].resetFields();
                             }
                         }, response => {
+                            if(response.status == 403){
+                                this.$Message.error('权限不足，请申请权限');
+                                // this.$router.push({
+                                //     name: "dashboard"
+                                // });
+                            }
                             if(response.status == 401){
                               // this.$Message.error('请登陆');
                               this.$router.push({
@@ -139,6 +147,12 @@ export default {
                                 this.$refs[name].resetFields();    
                             }
                         }, response => {
+                            if(response.status == 403){
+                                this.$Message.error('权限不足，请申请权限');
+                                // this.$router.push({
+                                //     name: "dashboard"
+                                // });
+                            }
                             if(response.status == 401){
                               // this.$Message.error('请登陆');
                               this.$router.push({
@@ -147,6 +161,7 @@ export default {
                             }
                         });
                     }
+                    this.$props.submit_button = false;
                 } else {
                     this.$Message.error('请查看是否填写完必须输入的项!');
                 }

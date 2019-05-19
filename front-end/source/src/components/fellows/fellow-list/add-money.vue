@@ -30,7 +30,7 @@
                 </Select>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
+                <Button type="primary" @click="handleSubmit('singleItem')" :disabled=submit_button>提交</Button>
                 <Button @click="handleReset('singleItem')" style="margin-left: 8px">重置</Button>
             </FormItem>
         </Form>
@@ -44,6 +44,7 @@ export default {
         modal_type: '',
         card_type_list: '',
         employee_list: '',
+        submit_button: false,
         fellow_list: '',
         card_type_list: '',
         singleItem: {
@@ -89,6 +90,7 @@ export default {
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
+                    this.submit_button = true;
                     var post_URL = baseAPIUrl + "handle_flow/add_money_fellow";
 
                     this.$http.post(post_URL, this.singleItem).then(response => {
@@ -108,6 +110,7 @@ export default {
                           });
                         }
                     });
+                    this.submit_button = false;
                 } else {
                     this.$Message.error('请查看是否填写完必须输入的项!');
                 }

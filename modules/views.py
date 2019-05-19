@@ -240,8 +240,10 @@ class Fellow(HTTPMethodView):
             return response.json({"status": "failed", "message": "开卡失败，错误信息为%s" % str(e)})
 
         return response.json({"status": "success", "message": "开卡成功"})
-
-    async def put(self, request, phone_number):
+    
+    @staticmethod
+    @authorized(1)
+    async def put(request, phone_number):
         data = request.json
         name, birthday, password, card_type, money, created_by = (
             data.get('name', ''),
@@ -260,7 +262,9 @@ class Fellow(HTTPMethodView):
             return response.json({"status": "failed", "message": str(e)})
         return response.json({"status": "success", "message": "更新会员信息成功"})
 
-    async def delete(self, request, phone_number):
+    @staticmethod
+    @authorized(1)
+    async def delete(request, phone_number):
         data = request.json
         sql = 'delete from fellow_list where phone_number = "%s"' % (phone_number)
         try:

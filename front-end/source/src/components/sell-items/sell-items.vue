@@ -119,17 +119,17 @@ export default {
                                     }
                                 }
                             }, '编辑'),
-                            h('Button', {
-                                props: {
-                                    type: 'error',
-                                    size: 'small'
-                                },
-                                on: {
-                                    click: () => {
-                                        this.removeItem(params.index)
-                                    }
-                                }
-                            }, '删除')
+                            // h('Button', {
+                            //     props: {
+                            //         type: 'error',
+                            //         size: 'small'
+                            //     },
+                            //     on: {
+                            //         click: () => {
+                            //             this.removeItem(params.index)
+                            //         }
+                            //     }
+                            // }, '删除')
                         ]);
                     }
                 }

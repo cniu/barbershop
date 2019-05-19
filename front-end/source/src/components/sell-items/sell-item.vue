@@ -50,7 +50,7 @@
                 <Input v-model="singleItem.comment" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="可以输入备注以便记录"></Input>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="handleSubmit('singleItem')">提交</Button>
+                <Button type="primary" @click="handleSubmit('singleItem')" :disabled=submit_button>提交</Button>
                 <Button @click="handleReset('singleItem')" style="margin-left: 8px">重置</Button>
             </FormItem>
         </Form>
@@ -65,6 +65,7 @@ export default {
         assistant_list: '',
         fellow_list: '',
         modal_type: '',
+        submit_button: false,
         singleItem: {
             hairdresser: '',
             assistant: '',
@@ -110,6 +111,7 @@ export default {
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (valid) {
+                    this.submit_button = true;
                     if(this.singleItem.pay_type != "刷卡" && this.singleItem.fellow != undefined){
                         this.$Modal.error({
                             title: '请确认是否填写正确',
@@ -184,8 +186,9 @@ export default {
                             }
                         });
                     }
+                    this.submit_button = false;
                 } else {
-                    this.$Message.error('请查看是否填写完必须输入的项!');
+                    this.$Message.error('请查看网络或者是否填写完必须输入的项!');
                 }
             })
         },

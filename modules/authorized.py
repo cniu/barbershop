@@ -7,7 +7,7 @@ from modules import app, auth
 
 def check_request_for_authorization_status(request, page_type):
     current_user = auth.current_user(request)
-    if current_user is not None and current_user.level > page_type:
+    if current_user is not None and current_user.level <= page_type:
         return True
     return False
 
