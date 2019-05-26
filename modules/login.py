@@ -7,10 +7,10 @@ from collections import namedtuple
 
 from modules import app, auth
 
-session = {}
-@app.middleware('request')
-async def add_session_to_request(request):
-    request['session'] = session
+# session = {}
+# @app.middleware('request')
+# async def add_session_to_request(request):
+#     request['session'] = session
 
 @app.route('/login', methods=['POST'])
 async def login(request):
