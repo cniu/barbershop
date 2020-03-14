@@ -14,7 +14,7 @@ app.config.AUTH_LOGIN_ENDPOINT = 'login'
 app.config['CORS_AUTOMATIC_OPTIONS'] = True
 
 auth = Auth(app)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 from modules import authorized
 from modules import views

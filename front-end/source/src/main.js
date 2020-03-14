@@ -14,11 +14,18 @@ import VueResource from 'vue-resource';
 import iView from 'iview'
 import BootstrapVue from 'bootstrap-vue'
 
+
 Vue.config.productionTip = false
 
 Vue.use(iView)
-Vue.use(VueResource);
-Vue.use(BootstrapVue);
+Vue.use(VueResource)
+Vue.use(BootstrapVue)
+
+Vue.http.interceptors.push((request, next) => { 
+
+  request.credentials = true;
+  next();
+});
 
 /**
  * @description 全局注册应用配置
