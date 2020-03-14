@@ -245,18 +245,20 @@ class Fellow(HTTPMethodView):
     @authorized(1)
     async def put(request, phone_number):
         data = request.json
-        name, birthday, password, card_type, money, created_by = (
+        name, birthday, password, new_phone_number, card_type, money, created_by = (
             data.get('name', ''),
             data.get('birthday', ''),
             data.get('password', ''),
+            data.get('new_phone_number', ''),
             data.get('card_type', ''),
             data.get('money', 0),
             data.get('created_by', '')
         )
+        if new_phone_number == "": new_phone_number = phone_number
         try:
-            sql = 'update fellow_list set name = "%s", birthday = "%s", password = "%s", card_type = "%s", money = "%s", created_by = "%s" \
+            sql = 'update fellow_list set name = "%s", birthday = "%s", password = "%s", phone_number = "%s", card_type = "%s", money = "%s", created_by = "%s" \
                 where phone_number = "%s"' \
-                % (name, birthday, password, card_type, int(money), created_by, phone_number)
+                % (name, birthday, password, new_phone_number, card_type, int(money), created_by, phone_number)
             res = await request.app.mysql.query_other(sql)
         except Exception as e:
             return response.json({"status": "failed", "message": str(e)})

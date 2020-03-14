@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uuid, json
+import uuid, json, datetime
 
 from sanic import response
 from modules import app, auth
@@ -10,9 +10,10 @@ from modules.login import handle_no_auth
 
 from sanic.log import logger
 
-@app.route("/get_daily_data", methods=['GET'])
+@app.route("/get_daily_data/<date_value:string>", methods=['GET'])
 @auth.login_required(handle_no_auth=handle_no_auth)
-async def getData(request):
+async def getData(request, date_value):
+    if date_value == "now": date_value = datetime.datetime.today().strftime ('%Y-%m-%d')
     items_count, fellow_item_count, sell_number, sell_money, cost = 0, 0, 0, 0, 0
     sell_money_items_type, sell_item_type = {}, {}
     cash_flow_in_reasons = {}
@@ -24,8 +25,7 @@ async def getData(request):
 
     week_sell_numbers = {}
     week_sell_money = {}
-
-    sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where to_days(created_time) = to_days(now())')
+    sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where to_days(created_time) = to_days("%s")' % date_value)
     for raw_id, value in enumerate(sell_item_list):
         n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment, created_time = value
         if fellow != "":
@@ -40,7 +40,7 @@ async def getData(request):
         else:
             assistant_sell_number.setdefault(assistant, {"value": 0, "name": assistant})["value"] += int(money)
 
-    cash_flow = await request.app.mysql.query_select('select * from cash_flow where to_days(created_time) = to_days(now())')
+    cash_flow = await request.app.mysql.query_select('select * from cash_flow where to_days(created_time) = to_days("%s")' % date_value)
     for raw_id, value in enumerate(cash_flow):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         if "入账" in flow_direction:
@@ -73,7 +73,7 @@ async def getData(request):
             if flow_direction == "入账":
                 week_sell_money[created_time[0:10]] += int(money)
 
-    res = await request.app.mysql.query_select('select count(*) from fellow_money_history_list where reason = "开卡" and to_days(created_time) = to_days(now())')
+    res = await request.app.mysql.query_select('select count(*) from fellow_money_history_list where reason = "开卡" and to_days(created_time) = to_days("%s")' % date_value)
     new_count_fellow = res[0][0]
 
     return response.json({
@@ -96,9 +96,10 @@ async def getData(request):
         "status": "success"
     })
 
-@app.route("/get_all_data", methods=['GET'])
+@app.route("/get_all_data/<date_value:string>", methods=['GET'])
 @auth.login_required(handle_no_auth=handle_no_auth)
-async def getData(request):
+async def getData(request, date_value):
+    if date_value == "now": date_value = datetime.datetime.today().strftime ('%Y')
     items_count, fellow_item_count, sell_number, sell_money, cost = 0, 0, 0, 0, 0
     sell_money_items_type, sell_item_type = {}, {}
     cash_flow_in_reasons = {}
@@ -107,7 +108,12 @@ async def getData(request):
     year_sell_numbers = {}
     year_sell_money = {}
 
-    sell_item_list = await request.app.mysql.query_select('select * from sell_item_list where YEAR(created_time)=YEAR(NOW())')
+    if "-" not in date_value:
+        temp = 'select * from sell_item_list where YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from sell_item_list where YEAR(created_time)="%s" and month(created_time)="%s"' % tuple(date_value.split('-'))
+
+    sell_item_list = await request.app.mysql.query_select(temp)
     for raw_id, value in enumerate(sell_item_list):
         n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment, created_time = value
         if fellow != "":
@@ -116,7 +122,11 @@ async def getData(request):
         sell_money_items_type.setdefault(pay_type, {"value": 0, "name": pay_type})["value"] += int(money)
         sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
 
-    cash_flow = await request.app.mysql.query_select('select * from cash_flow where YEAR(created_time)=YEAR(NOW())')
+    if "-" not in date_value:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s" and month(created_time)="%s"' % tuple(date_value.split('-'))
+    cash_flow = await request.app.mysql.query_select(temp)
     for raw_id, value in enumerate(cash_flow):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         if "入账" in flow_direction:
@@ -128,7 +138,11 @@ async def getData(request):
         if flow_direction == "出账":
             cost += int(money)
 
-    cash_flow = await request.app.mysql.query_select('select * from cash_flow where YEAR(created_time)=YEAR(NOW())')
+    if "-" not in date_value:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s"' % date_value.split('-')[0]
+    cash_flow = await request.app.mysql.query_select(temp)
     for raw_id, value in enumerate(cash_flow):
         n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
         created_time = str(created_time)
@@ -140,8 +154,15 @@ async def getData(request):
             if flow_direction == "入账":
                 year_sell_money[created_time[0:7]] += int(money)
 
-    res = await request.app.mysql.query_select('select count(*) from fellow_money_history_list where reason = "开卡" and YEAR(created_time)=YEAR(NOW())')
-    new_count_fellow = res[0][0]
+    if "-" not in date_value:
+        temp = 'select * from fellow_money_history_list where reason = "开卡" and YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from fellow_money_history_list where reason = "开卡" and YEAR(created_time)="%s" and month(created_time)="%s"' % tuple(date_value.split('-'))
+    res = await request.app.mysql.query_select(temp)
+    if len(res) == 0:
+        new_count_fellow = 0
+    else:
+        new_count_fellow = res[0][0]
 
     res = await request.app.mysql.query_select('select count(*), sum(money) FROM barbershop.fellow_list')
     fellow_sum_count, fellow_rest_money = res[0]

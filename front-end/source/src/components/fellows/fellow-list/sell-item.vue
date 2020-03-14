@@ -11,6 +11,9 @@
                 <InputNumber style="width: 280px;" disabled v-if="modal_type != 'add'" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
                 <InputNumber style="width: 280px;" v-if="modal_type == 'add'" v-model="singleItem.phone_number" placeholder="请输入手机号"></InputNumber>
             </FormItem>
+            <FormItem label="新手机号" prop="new_phone_number" v-if="modal_type != 'add'">
+                <InputNumber style="width: 280px;" v-model="singleItem.new_phone_number" placeholder="请输入新手机号"></InputNumber>
+            </FormItem>
             <FormItem label="消费密码" prop="password">
                 <Input v-model="singleItem.password" type="password" placeholder="请设置消费密码"></Input>
             </FormItem>
@@ -39,137 +42,135 @@
     </Row>
 </template>
 <script>
-const baseAPIUrl = process.env.baseAPIUrl;
+const baseAPIUrl = process.env.baseAPIUrl
 export default {
-    name: "SellItem",
-    props: {
-        modal_type: '',
-        card_type_list: '',
-        employee_list: '',
-        submit_button: false,
-        singleItem: {
-            name: '',
-            phone_number: '',
-            birthday: '',
-            card_type: '',
-            money: 0,
-            created_by: '',
-            password: '',
-            item_number: ''
-        }
-    },
-    data() {
-        return {
-            ruleValidate: {
-                name: [
-                    { required: true, message: '请输入名称', trigger: "blur" }
-                ],
-                phone_number: [
-                    { required: true, message: '请输入电话号码'},
-                    { type: 'number', message: '错误格式'}
-                ],
-                birthday: [
-                    { required: false, message: '请选择日期'},
-                    // { required: false, type: 'date', message: '错误格式'}
-                ],
-                card_type: [
-                    { required: true, message: '请选择卡类型' }
-                ],
-                money: [
-                    { required: true, message: '请填写金额' },
-                    { type: 'number', message: '错误金额'}
-                ],
-                created_by: [
-                    { required: true, message: '请选择开卡人' }
-                ]
-            }
-        }
-    },
-    methods: {
-        handleSubmit (name) {
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    this.$props.submit_button = true;
-                    if(this.$props.modal_type == "modify"){
-
-                        var post_URL = baseAPIUrl + "fellow/" + this.singleItem.phone_number;
-
-                        var temp = Object.assign({}, this.singleItem);
-                        temp.birthday = temp.birthday.toString();
-                        this.$http.put(post_URL, temp).then(response => {
-                            const res = response.data;
-                            if(res['status'] != "success")
-                                this.$Message.error(res['message']);
-                            else{
-                                this.$Message.success('修改成功!');
-                                this.$emit('closeModal', 'submit');
-                                this.$refs[name].resetFields();
-                            }
-                        }, response => {
-                            if(response.status == 403){
-                                this.$Message.error('权限不足，请申请权限');
-                                // this.$router.push({
-                                //     name: "dashboard"
-                                // });
-                            }
-                            if(response.status == 401){
-                              // this.$Message.error('请登陆');
-                              this.$router.push({
-                                name: "login"
-                              });
-                            }
-                        });
-                    }
-                    else if(this.$props.modal_type == "add"){
-                        var post_URL = baseAPIUrl + "fellow/1";
-                        var temp = Object.assign({}, this.singleItem);
-                        if("birthday" in temp){
-                            temp.birthday = temp.birthday.toString();
-                        }
-                        else{
-                            temp["birthday"] = "";
-                        }
-                        this.$http.post(post_URL, temp).then(response => {
-                            const res = response.data;
-                            if(res['status'] != "success"){
-                                this.$Message.error(res['message']);
-                            }
-                            else{
-                                post_URL = baseAPIUrl + "handle_flow/add_fellow";
-                                this.$http.post(post_URL, temp).then(response => {
-                                    const res = response.data;
-                                    if(res['status'] != "success")
-                                        this.$Message.error(res['message']);
-                                }, response => {
-                                });
-                                this.$Message.success('新增成功!');
-                                this.$emit('closeModal', 'submit');  
-                                this.$refs[name].resetFields();    
-                            }
-                        }, response => {
-                            if(response.status == 403){
-                                this.$Message.error('权限不足，请申请权限');
-                                // this.$router.push({
-                                //     name: "dashboard"
-                                // });
-                            }
-                            if(response.status == 401){
-                              // this.$Message.error('请登陆');
-                              this.$router.push({
-                                name: "login"
-                              });
-                            }
-                        });
-                    }
-                    this.$props.submit_button = false;
-                } else {
-                    this.$Message.error('请查看是否填写完必须输入的项!');
-                }
-            })
-        },
-        handleReset (name) {
-            this.$refs[name].resetFields();
-        }
+  name: 'SellItem',
+  props: {
+    modal_type: '',
+    card_type_list: '',
+    employee_list: '',
+    submit_button: false,
+    singleItem: {
+      name: '',
+      phone_number: '',
+      new_phone_number: '',
+      birthday: '',
+      card_type: '',
+      money: 0,
+      created_by: '',
+      password: '',
+      item_number: ''
     }
+  },
+  data () {
+    return {
+      ruleValidate: {
+        name: [
+          { required: true, message: '请输入名称', trigger: 'blur' }
+        ],
+        phone_number: [
+          { required: true, message: '请输入电话号码'},
+          { type: 'number', message: '错误格式'}
+        ],
+        new_phone_number: [
+          { required: true, message: '请输入电话号码'},
+          { type: 'number', message: '错误格式'}
+        ],
+        birthday: [
+          { required: false, message: '请选择日期'}
+          // { required: false, type: 'date', message: '错误格式'}
+        ],
+        card_type: [
+          { required: true, message: '请选择卡类型' }
+        ],
+        money: [
+          { required: true, message: '请填写金额' },
+          { type: 'number', message: '错误金额'}
+        ],
+        created_by: [
+          { required: true, message: '请选择开卡人' }
+        ]
+      }
+    }
+  },
+  methods: {
+    handleSubmit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$props.submit_button = true
+          if (this.$props.modal_type == 'modify') {
+            var post_URL = baseAPIUrl + 'fellow/' + this.singleItem.phone_number
+
+            var temp = Object.assign({}, this.singleItem)
+            temp.birthday = temp.birthday.toString()
+            this.$http.put(post_URL, temp).then(response => {
+              const res = response.data
+              if (res['status'] != 'success') { this.$Message.error(res['message']) } else {
+                this.$Message.success('修改成功!')
+                this.$emit('closeModal', 'submit')
+                this.$refs[name].resetFields()
+              }
+            }, response => {
+              if (response.status == 403) {
+                this.$Message.error('权限不足，请申请权限')
+                // this.$router.push({
+                //     name: "dashboard"
+                // });
+              }
+              if (response.status == 401) {
+                // this.$Message.error('请登陆');
+                this.$router.push({
+                  name: 'login'
+                })
+              }
+            })
+          } else if (this.$props.modal_type == 'add') {
+            var post_URL = baseAPIUrl + 'fellow/1'
+            var temp = Object.assign({}, this.singleItem)
+            if ('birthday' in temp) {
+              temp.birthday = temp.birthday.toString()
+            } else {
+              temp['birthday'] = ''
+            }
+            this.$http.post(post_URL, temp).then(response => {
+              const res = response.data
+              if (res['status'] != 'success') {
+                this.$Message.error(res['message'])
+              } else {
+                post_URL = baseAPIUrl + 'handle_flow/add_fellow'
+                this.$http.post(post_URL, temp).then(response => {
+                  const res = response.data
+                  if (res['status'] != 'success') { this.$Message.error(res['message']) }
+                }, response => {
+                })
+                this.$Message.success('新增成功!')
+                this.$emit('closeModal', 'submit')
+                this.$refs[name].resetFields()
+              }
+            }, response => {
+              if (response.status == 403) {
+                this.$Message.error('权限不足，请申请权限')
+                // this.$router.push({
+                //     name: "dashboard"
+                // });
+              }
+              if (response.status == 401) {
+                // this.$Message.error('请登陆');
+                this.$router.push({
+                  name: 'login'
+                })
+              }
+            })
+          }
+          this.$props.submit_button = false
+        } else {
+          this.$Message.error('请查看是否填写完必须输入的项!')
+        }
+      })
+    },
+    handleReset (name) {
+      this.$refs[name].resetFields()
+    }
+  }
 }
 </script>

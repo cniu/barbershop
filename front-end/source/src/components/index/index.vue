@@ -31,8 +31,8 @@
                         <Button type="text" icon="ios-apps" size="large" @click="enter_admin">进入管理页面</Button>
                         <Button type="text" icon="ios-exit" size="large" @click="quit">退出系统</Button>
                     </div>
-                </div> 
-                                 
+                </div>
+
             </Header>
             <Content :style="{
                 height: 'calc(100% - 60px)',
@@ -43,7 +43,7 @@
                 width: '100%',
                 }" class="index_background">
                 <Row :gutter="120" class="row_box">
-                    <Col span="8">  
+                    <Col span="8">
                         <Card>
                             <div style="text-align:center" @click="addSellItem">
                                 <img :src="box_img">
@@ -51,7 +51,7 @@
                             </div>
                         </Card>
                     </Col>
-                    <Col span="8">  
+                    <Col span="8">
                         <Card>
                             <div style="text-align:center" @click="addFellowMoneyItem">
                                 <img :src="box_img">
@@ -59,7 +59,7 @@
                             </div>
                         </Card>
                     </Col>
-                    <Col span="8">  
+                    <Col span="8">
                         <Card>
                             <div style="text-align:center" @click="addFellowItem">
                                 <img :src="box_img">
@@ -69,7 +69,7 @@
                     </Col>
                 </Row>
                 <Row :gutter="120" class="row_box">
-                    <Col span="8">  
+                    <Col span="8">
                         <Card>
                             <div style="text-align:center" @click="addProductSellItem">
                                 <img :src="box_img">
@@ -77,11 +77,19 @@
                             </div>
                         </Card>
                     </Col>
-                    <Col span="8">  
+                    <Col span="8">
                         <Card>
                             <div style="text-align:center" @click="addOtherSellItem">
                                 <img :src="box_img">
                                 <h3>其他消费</h3>
+                            </div>
+                        </Card>
+                    </Col>
+                    <Col span="8">
+                        <Card>
+                            <div style="text-align:center" @click="summaryAddFlowItem">
+                                <img :src="box_img">
+                                <h3>出账及其他入账</h3>
                             </div>
                         </Card>
                     </Col>
@@ -113,6 +121,11 @@
             title="其他消费">
             <OtherSellItem :singleItem="otherSellItem" :modal_type="modal_type" @closeModal="closeOtherSellItemModal" :employee_list="employee_list" :fellow_list="fellow_list"></OtherSellItem>
         </Modal>
+        <Modal
+            v-model="addFlowItemModal" footer-hide
+            title="出账及其他入账">
+            <addFlowItem :singleItem="addFlowItem" :modal_type="modal_type" @closeModal="closeAddFlowItemModal" :employee_list="employee_list"></addFlowItem>
+        </Modal>
     </div>
 </template>
 <script>
@@ -121,202 +134,214 @@ import FellowItem from '@/components/fellows/fellow-list/sell-item.vue'
 import IncreaseFellowMoneyItem from '@/components/fellows/fellow-list/add-money.vue'
 import ProductSellItem from '@/components/product-sell/sell-item.vue'
 import OtherSellItem from '@/components/other-sell/sell-item.vue'
+import addFlowItem from '@/components/cash-flow/in-out.vue'
 
 import w_box_img from '@/assets/images/barber-razor-scissor.png'
 import w_logo from '@/assets/images/logo.png'
-const baseAPIUrl = process.env.baseAPIUrl;
+const baseAPIUrl = process.env.baseAPIUrl
 export default {
-    name: "Index",
-    components: {
-        SellItem,
-        FellowItem,
-        IncreaseFellowMoneyItem,
-        ProductSellItem,
-        OtherSellItem
-    },
-    data() {
-        return{
-            logo: '',
-            box_img: '',
-            current_user: '',
-            sellItemModal: false,
-            fellowItemModal: false,
-            increaseFellowItemModal: false,
-            productSellItemModal: false,
-            otherSellItemModal: false,
-            modal_type: 'add',
-            hairdresser_list: [],
-            assistant_list: [],
-            fellow_list: [],
-            card_type_list: [],
-            employee_list: [],
-            sellItem: {
-                hairdresser: '',
-                assistant: '',
-                item_type: [],
-                money: 0,
-                pay_type: '',
-                fellow: '',
-                comment: '',
-                item_number: ''
-            },
-            fellowItem: {
-                name: '',
-                phone_number: 0,
-                birthday: '',
-                card_type: '',
-                money: 0,
-                created_by: '',
-                password: '',
-                item_number: ''
-            },
-            increaseFellowMoneyItem: {
-                fellow: '',
-                card_type: '',
-                money: 0,
-                created_by: '',
-                item_number: ''
-            },
-            productSellItem: {
-                fellow: '',
-                pay_type: '',
-                money: 0,
-                created_by: '',
-                comment: '',
-                item_number: ''
-            },
-            otherSellItem: {
-                fellow: '',
-                pay_type: '',
-                money: 0,
-                created_by: '',
-                item_number: '',
-                comment: ''
-            }
-        }
-    },
-    created: function() {
-        this.box_img = w_box_img;
-        this.logo = w_logo;
-        this.getEmployees();
-        this.getFellows();
-        this.getCardTypeList();
-        this.$http.get(baseAPIUrl + "api/user").then(response => {
-            this.current_user = response.data["name"];
-        }, response => {
-          this.$router.push({
-            name: "login"
-          });
-        });
-    },
-    methods: {
-        getEmployees() {
-            var post_URL = baseAPIUrl + "summarized_employees";
-
-            this.$http.get(post_URL).then(response => {
-                const res = response.data;
-                this.hairdresser_list = res['hairdresser_list'];
-                this.assistant_list = res['assistant_list'];
-                this.employee_list = res['employee_list'];
-                if(res['status'] != "success")
-                    this.$Message.error(res['message']);
-            }, response => {
-                if(response.status == 401){
-                  // this.$Message.error('请登陆');
-                  this.$router.push({
-                    name: "login"
-                  });
-                }
-            });
-
-        },
-        getCardTypeList() {
-            var post_URL = baseAPIUrl + "summarized_setting";
-
-            this.$http.get(post_URL).then(response => {
-                const res = response.data;
-                this.card_type_list = res['card_type_list'];
-                if(res['status'] != "success")
-                    this.$Message.error(res['message']);
-            }, response => {
-                if(response.status == 401){
-                  // this.$Message.error('请登陆');
-                  this.$router.push({
-                    name: "login"
-                  });
-                }
-            });
-
-        },
-        getFellows() {
-            var post_URL = baseAPIUrl + "summarized_fellows";
-
-            this.$http.get(post_URL).then(response => {
-                const res = response.data;
-                this.fellow_list = res['response_list'];
-                if(res['status'] != "success")
-                    this.$Message.error(res['message']);
-            }, response => {
-                if(response.status == 401){
-                  // this.$Message.error('请登陆');
-                  this.$router.push({
-                    name: "login"
-                  });
-                }
-            });
-
-        },
-        quit(){
-            this.$http.get(baseAPIUrl + "logout").then(response => {
-              this.$Message.success('退出成功！' + response.data.message);
-              this.$router.push({
-                name: "login"
-              });
-            }, response => {
-              // this.$Message.error('请登陆');
-            });
-        },
-        enter_admin(){
-            this.$router.push({
-                name: "dashboard"
-              });
-        },
-        addSellItem(){
-            this.sellItem = {};
-            this.sellItem.birthday = "";
-            this.sellItemModal = true;
-        },
-        closeSellItemModal(){
-            this.sellItemModal = false;
-        },
-        addFellowItem(){
-            this.fellowItem = {};
-            this.fellowItemModal = true;
-        },
-        closeFellowItemModal(){
-            this.fellowItemModal = false;
-        },
-        addFellowMoneyItem(){
-            this.increaseFellowMoneyItem = {};
-            this.increaseFellowItemModal = true;
-        },
-        closeAddFellowMoneyItemModal(){
-            this.increaseFellowItemModal = false;
-        },
-        addProductSellItem(){
-            this.productSellItem = {};
-            this.productSellItemModal = true;
-        },
-        closeProductSellItemModal(){
-            this.productSellItemModal = false;
-        },
-        addOtherSellItem(){
-            this.otherSellItem = {};
-            this.otherSellItemModal = true;
-        },
-        closeOtherSellItemModal(){
-            this.otherSellItemModal = false;
-        },
+  name: 'Index',
+  components: {
+    SellItem,
+    FellowItem,
+    IncreaseFellowMoneyItem,
+    ProductSellItem,
+    OtherSellItem,
+    addFlowItem
+  },
+  data () {
+    return {
+      logo: '',
+      box_img: '',
+      current_user: '',
+      sellItemModal: false,
+      fellowItemModal: false,
+      increaseFellowItemModal: false,
+      productSellItemModal: false,
+      otherSellItemModal: false,
+      addFlowItemModal: false,
+      modal_type: 'add',
+      hairdresser_list: [],
+      assistant_list: [],
+      fellow_list: [],
+      card_type_list: [],
+      employee_list: [],
+      sellItem: {
+        hairdresser: '',
+        assistant: '',
+        item_type: [],
+        money: 0,
+        pay_type: '',
+        fellow: '',
+        comment: '',
+        item_number: ''
+      },
+      fellowItem: {
+        name: '',
+        phone_number: 0,
+        birthday: '',
+        card_type: '',
+        money: 0,
+        created_by: '',
+        password: '',
+        item_number: ''
+      },
+      increaseFellowMoneyItem: {
+        fellow: '',
+        card_type: '',
+        money: 0,
+        created_by: '',
+        item_number: ''
+      },
+      productSellItem: {
+        fellow: '',
+        pay_type: '',
+        money: 0,
+        created_by: '',
+        comment: '',
+        item_number: ''
+      },
+      otherSellItem: {
+        fellow: '',
+        pay_type: '',
+        money: 0,
+        created_by: '',
+        item_number: '',
+        comment: ''
+      },
+      addFlowItem: {
+        flow_direction: '',
+        item_type: '',
+        money: 0,
+        created_by: '',
+        item_number: '',
+        comment: ''
+      }
     }
+  },
+  created: function () {
+    this.box_img = w_box_img
+    this.logo = w_logo
+    this.getEmployees()
+    this.getFellows()
+    this.getCardTypeList()
+    this.$http.get(baseAPIUrl + 'api/user').then(response => {
+      this.current_user = response.data['name']
+    }, response => {
+      this.$router.push({
+        name: 'login'
+      })
+    })
+  },
+  methods: {
+    getEmployees () {
+      var post_URL = baseAPIUrl + 'summarized_employees'
+
+      this.$http.get(post_URL).then(response => {
+        const res = response.data
+        this.hairdresser_list = res['hairdresser_list']
+        this.assistant_list = res['assistant_list']
+        this.employee_list = res['employee_list']
+        if (res['status'] != 'success') { this.$Message.error(res['message']) }
+      }, response => {
+        if (response.status == 401) {
+          // this.$Message.error('请登陆');
+          this.$router.push({
+            name: 'login'
+          })
+        }
+      })
+    },
+    getCardTypeList () {
+      var post_URL = baseAPIUrl + 'summarized_setting'
+
+      this.$http.get(post_URL).then(response => {
+        const res = response.data
+        this.card_type_list = res['card_type_list']
+        if (res['status'] != 'success') { this.$Message.error(res['message']) }
+      }, response => {
+        if (response.status == 401) {
+          // this.$Message.error('请登陆');
+          this.$router.push({
+            name: 'login'
+          })
+        }
+      })
+    },
+    getFellows () {
+      var post_URL = baseAPIUrl + 'summarized_fellows'
+
+      this.$http.get(post_URL).then(response => {
+        const res = response.data
+        this.fellow_list = res['response_list']
+        if (res['status'] != 'success') { this.$Message.error(res['message']) }
+      }, response => {
+        if (response.status == 401) {
+          // this.$Message.error('请登陆');
+          this.$router.push({
+            name: 'login'
+          })
+        }
+      })
+    },
+    quit () {
+      this.$http.get(baseAPIUrl + 'logout').then(response => {
+        this.$Message.success('退出成功！' + response.data.message)
+        this.$router.push({
+          name: 'login'
+        })
+      }, response => {
+        // this.$Message.error('请登陆');
+      })
+    },
+    enter_admin () {
+      this.$router.push({
+        name: 'dashboard'
+      })
+    },
+    addSellItem () {
+      this.sellItem = {}
+      this.sellItem.birthday = ''
+      this.sellItemModal = true
+    },
+    closeSellItemModal () {
+      this.sellItemModal = false
+    },
+    addFellowItem () {
+      this.fellowItem = {}
+      this.fellowItemModal = true
+    },
+    closeFellowItemModal () {
+      this.fellowItemModal = false
+    },
+    addFellowMoneyItem () {
+      this.increaseFellowMoneyItem = {}
+      this.increaseFellowItemModal = true
+    },
+    closeAddFellowMoneyItemModal () {
+      this.increaseFellowItemModal = false
+    },
+    addProductSellItem () {
+      this.productSellItem = {}
+      this.productSellItemModal = true
+    },
+    closeProductSellItemModal () {
+      this.productSellItemModal = false
+    },
+    addOtherSellItem () {
+      this.otherSellItem = {}
+      this.otherSellItemModal = true
+    },
+    closeOtherSellItemModal () {
+      this.otherSellItemModal = false
+    },
+    summaryAddFlowItem () {
+      this.addFlowItem = {}
+      this.addFlowItemModal = true
+    },
+    closeAddFlowItemModal () {
+      this.addFlowItemModal = false
+    }
+  }
 }
 </script>

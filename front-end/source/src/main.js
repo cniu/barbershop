@@ -23,9 +23,9 @@ Vue.use(BootstrapVue)
 
 Vue.http.interceptors.push((request, next) => { 
 
-  request.credentials = true;
-  next();
-});
+  request.credentials = true
+  next()
+})
 
 /**
  * @description 全局注册应用配置

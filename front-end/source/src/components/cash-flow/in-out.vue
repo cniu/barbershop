@@ -37,75 +37,73 @@
     </Row>
 </template>
 <script>
-const baseAPIUrl = process.env.baseAPIUrl;
+const baseAPIUrl = process.env.baseAPIUrl
 export default {
-    name: "AddFlow",
-    props: {
-        modal_type: '',
-        employee_list: '',
-        singleItem: {
-            flow_direction: '',
-            item_type: '',
-            money: 0,
-            created_by: '',
-            item_number: '',
-            comment: ''
-        }
-    },
-    data() {
-        return {
-            ruleValidate: {
-                flow_direction: [
-                    { required: true, message: '请选择'},
-                ],
-                item_type: [
-                    { required: true, message: '请选择类型' }
-                ],
-                money: [
-                    { required: true, message: '请填写金额' },
-                    { type: 'number', message: '错误金额'}
-                ],
-                created_by: [
-                    { required: true, message: '请选择开卡人' }
-                ],
-                comment: [
-                    { required: true, message: '请输入备注', trigger: 'blur' },
-                    { type: 'string', max: 200, message: '太长不易读', trigger: 'blur' }
-                ]
-            }
-        }
-    },
-    methods: {
-        handleSubmit (name) {
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    var post_URL = baseAPIUrl + "handle_flow/single_item";
-
-                    this.$http.post(post_URL, this.singleItem).then(response => {
-                        const res = response.data;
-                        if(res['status'] != "success")
-                            this.$Message.error(res['message']);
-                        else{
-                            this.$Message.success('添加成功!');
-                            this.$emit('closeModal', 'submit');  
-                            this.$refs[name].resetFields();    
-                        }
-                    }, response => {
-                        if(response.status == 401){
-                          // this.$Message.error('请登陆');
-                          this.$router.push({
-                            name: "login"
-                          });
-                        }
-                    });
-                } else {
-                    this.$Message.error('请查看是否填写完必须输入的项!');
-                }
-            })
-        },
-        handleReset (name) {
-            this.$refs[name].resetFields();
-        }
+  name: 'AddFlow',
+  props: {
+    modal_type: '',
+    employee_list: '',
+    singleItem: {
+      flow_direction: '',
+      item_type: '',
+      money: 0,
+      created_by: '',
+      item_number: '',
+      comment: ''
     }
+  },
+  data () {
+    return {
+      ruleValidate: {
+        flow_direction: [
+          { required: true, message: '请选择'}
+        ],
+        item_type: [
+          { required: true, message: '请选择类型' }
+        ],
+        money: [
+          { required: true, message: '请填写金额' },
+          { type: 'number', message: '错误金额'}
+        ],
+        created_by: [
+          { required: true, message: '请选择开卡人' }
+        ],
+        comment: [
+          { required: true, message: '请输入备注', trigger: 'blur' },
+          { type: 'string', max: 200, message: '太长不易读', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    handleSubmit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          var post_URL = baseAPIUrl + 'handle_flow/single_item'
+
+          this.$http.post(post_URL, this.singleItem).then(response => {
+            const res = response.data
+            if (res['status'] != 'success') { this.$Message.error(res['message']) } else {
+              this.$Message.success('添加成功!')
+              this.$emit('closeModal', 'submit')
+              this.$refs[name].resetFields()
+            }
+          }, response => {
+            if (response.status == 401) {
+              // this.$Message.error('请登陆');
+              this.$router.push({
+                name: 'login'
+              })
+            }
+          })
+        } else {
+          this.$Message.error('请查看是否填写完必须输入的项!')
+        }
+      })
+    },
+    handleReset (name) {
+      this.$refs[name].resetFields()
+    }
+  }
 }
 </script>
