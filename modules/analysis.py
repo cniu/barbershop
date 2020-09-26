@@ -32,6 +32,7 @@ async def getData(request, date_value):
             fellow_item_count += 1
         items_count += 1
         sell_money_items_type.setdefault(pay_type, {"value": 0, "name": pay_type})["value"] += int(money)
+        item_type = ','.join(sorted(item_type.split(',')))
         sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
 
         hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
@@ -120,6 +121,7 @@ async def getData(request, date_value):
             fellow_item_count += 1
         items_count += 1
         sell_money_items_type.setdefault(pay_type, {"value": 0, "name": pay_type})["value"] += int(money)
+        item_type = ','.join(sorted(item_type.split(',')))
         sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
 
     if "-" not in date_value:

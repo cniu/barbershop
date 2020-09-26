@@ -112,14 +112,14 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.submit_button = true;
-                    if(this.singleItem.pay_type != "刷卡" && this.singleItem.fellow != undefined){
-                        this.$Modal.error({
-                            title: '请确认是否填写正确',
-                            content: '<p>若选会员，请选择刷卡类别</p>'
-                        });
-                        return false;
-                    }
-                    else if(this.singleItem.pay_type == "刷卡" && this.singleItem.fellow == undefined){
+                    // if(this.singleItem.pay_type != "刷卡" && this.singleItem.fellow != undefined){
+                    //     this.$Modal.error({
+                    //         title: '请确认是否填写正确',
+                    //         content: '<p>若选会员，请选择刷卡类别</p>'
+                    //     });
+                    //     return false;
+                    // }
+                    if(this.singleItem.pay_type == "刷卡" && this.singleItem.fellow == undefined){
                         this.$Modal.error({
                             title: '请确认是否填写正确',
                             content: '<p>若选刷卡，请选择会员</p>'

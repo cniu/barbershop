@@ -213,19 +213,28 @@ async def handleFlow(request, flow_type):
                 card_type, name, money = fellow_list[0]
                 logger.info('Fetch fellow money successfully!')
 
-                sql = 'update fellow_list set money = "%s" where phone_number = "%s"' \
-                    % (int(money) - int(sell_money), fellow_phone_number)
-                res = await request.app.mysql.query_other(sql)
-                logger.info('Update fellow money successfully!')
+                if pay_type == "刷卡":
+                    sql = 'update fellow_list set money = "%s" where phone_number = "%s"' \
+                        % (int(money) - int(sell_money), fellow_phone_number)
+                    res = await request.app.mysql.query_other(sql)
+                    logger.info('Update fellow money successfully!')
 
-                sql = 'insert into fellow_money_history_list (phone_number, card_type, expend_money, remain_money, sell_item_number, reason) values ("%s", "%s", "%s", "%s", "%s", "%s")' \
-                    % (fellow_phone_number, card_type, sell_money, int(money) - int(sell_money), item_number, "消费")
-                res = await request.app.mysql.query_other(sql)
-                logger.info('Add fellow money history successfully!')
+                    sql = 'insert into fellow_money_history_list (phone_number, card_type, expend_money, remain_money, sell_item_number, reason) values ("%s", "%s", "%s", "%s", "%s", "%s")' \
+                        % (fellow_phone_number, card_type, sell_money, int(money) - int(sell_money), item_number, "%s消费" % pay_type)
+                    res = await request.app.mysql.query_other(sql)
+                    logger.info('Add fellow money history successfully!')
+                else:
+                    sql = 'insert into fellow_money_history_list (phone_number, card_type, expend_money, remain_money, sell_item_number, reason) values ("%s", "%s", "%s", "%s", "%s", "%s")' \
+                        % (fellow_phone_number, card_type, sell_money, int(money), item_number, "%s消费" % pay_type)
+                    res = await request.app.mysql.query_other(sql)
+                    logger.info('Add fellow money history successfully!')
+
 
                 reason = "开单"
                 flow_direction = "不入账"
-                comment = "会员%s消费" % (fellow_phone_number)
+                if pay_type != "刷卡":
+                    flow_direction = "入账"
+                comment = "会员%s %s消费" % (fellow_phone_number, pay_type)
                 sql = 'insert into cash_flow (sell_item_number, money, flow_direction, reason, comment) values ("%s", "%s", "%s", "%s", "%s")' \
                     % (item_number, sell_money, flow_direction, reason, comment)
                 try:
@@ -269,8 +278,8 @@ async def handleFlow(request, flow_type):
             name, money = fellow_list[0]
             logger.info('Fetch fellow money successfully!')
 
-            sql = 'update fellow_list set money = "%s" where phone_number = "%s"' \
-                % (int(add_money) + int(money), fellow_phone_number)
+            sql = 'update fellow_list set card_type = "%s", money = "%s" where phone_number = "%s"' \
+                % (card_type, int(add_money) + int(money), fellow_phone_number)
             res = await request.app.mysql.query_other(sql)
             logger.info('Update fellow money successfully!')
 
