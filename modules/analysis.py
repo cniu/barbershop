@@ -35,7 +35,10 @@ async def getData(request, date_value):
         item_type = ','.join(sorted(item_type.split(',')))
         sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
 
-        hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
+        if hairdresser.strip() == "":
+            hairdresser_sell_number.setdefault("无发型师", {"value": 0, "name": "无发型师"})["value"] += int(money)
+        else:
+            hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
         if assistant.strip() == "":
             assistant_sell_number.setdefault("无助理", {"value": 0, "name": "无助理"})["value"] += int(money)
         else:
@@ -216,14 +219,14 @@ async def getData(request, date_value):
             hairdresser_sell_number.setdefault("无发型师", {"value": 0, "name": "无发型师"})["value"] += int(money)
         else:
             hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
-            employee_analysis_result.setdefault("发型师：%s 服务类别" % hairdresser, {})
-            employee_analysis_result["发型师：%s 服务类别" % hairdresser].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
+            employee_analysis_result.setdefault(u"发型师：%s 服务类别" % hairdresser, {})
+            employee_analysis_result[u"发型师：%s 服务类别" % hairdresser].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
         if assistant.strip() == "":
             assistant_sell_number.setdefault("无助理", {"value": 0, "name": "无助理"})["value"] += int(money)
         else:
             assistant_sell_number.setdefault(assistant, {"value": 0, "name": assistant})["value"] += int(money)
-            employee_analysis_result.setdefault("助理：%s 服务类别" % assistant, {})
-            employee_analysis_result["助理：%s 服务类别" % assistant].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
+            employee_analysis_result.setdefault(u"助理：%s 服务类别" % assistant, {})
+            employee_analysis_result[u"助理：%s 服务类别" % assistant].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
         
     if "-" not in date_value:
         temp = 'select * from cash_flow where YEAR(created_time)="%s"' % date_value
