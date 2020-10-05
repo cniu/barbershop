@@ -239,8 +239,8 @@ async def getData(request, date_value):
 
     for key, value in employee_analysis_result.items():
         temp_employee_analysis_result.append({"name": key, "content": value.values()})
-    temp_employee_analysis_result.sort()
-    
+    temp_employee_analysis_result.sort(key = lambda x: x["name"])
+
     return response.json({
         "data": {
             "items_count": items_count,
