@@ -91,6 +91,15 @@ export default new Router({
 				component: () => import('@/components/fellows/fellow-consumptions/')
 			},
 			{
+				path: '/employee/analysis',
+				name: 'employee-analysis',
+				meta: {
+				  title: '员工分析',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/employees/employee-analysis/')
+			},
+			{
 				path: '/employee/list',
 				name: 'employee-list',
 				meta: {
@@ -103,7 +112,7 @@ export default new Router({
 				path: '/employee/salary_record',
 				name: 'salary_record',
 				meta: {
-				  title: '员工列表',
+				  title: '员工工资流水',
 				  hideInMenu: true
 				},
 				component: () => import('@/components/employees/employee-money/')

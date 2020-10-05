@@ -62,6 +62,17 @@
         "choosed":false
     },
     {
+        "title":"消费记录统计",
+        "num":13,
+        "name":"pay-analysis",
+        "icon":"ios-speedometer",
+        "href":"/pay_analysis",
+        "closable":true,
+        "showInTags":false,
+        "showInMenus":true,
+        "choosed":false
+    },
+    {
         "title":"资金流",
         "num":11,
         "name":"cash-flow",
@@ -77,6 +88,17 @@
         "name":"employee-manage-parent",
         "icon":"md-people",
         "children":[
+            {
+                "title":"员工服务分析",
+                "num":12,
+                "name":"employee-analysis",
+                "icon":"ios-speedometer",
+                "href":"/employee/analysis",
+                "closable":true,
+                "showInTags":false,
+                "showInMenus":true,
+                "choosed":false
+            },
             {
                 "title":"员工列表",
                 "num":6,

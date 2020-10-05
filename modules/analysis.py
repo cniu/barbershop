@@ -37,7 +37,7 @@ async def getData(request, date_value):
 
         hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
         if assistant.strip() == "":
-            assistant_sell_number.setdefault("发型师", {"value": 0, "name": "发型师"})["value"] += int(money)
+            assistant_sell_number.setdefault("无助理", {"value": 0, "name": "无助理"})["value"] += int(money)
         else:
             assistant_sell_number.setdefault(assistant, {"value": 0, "name": assistant})["value"] += int(money)
 
@@ -184,6 +184,72 @@ async def getData(request, date_value):
             "year_sell_numbers": year_sell_numbers,
             "year_sell_money": year_sell_money,
             "cash_flow_in_reasons": list(cash_flow_in_reasons.values())
+        },
+        "status": "success"
+    })
+
+
+@app.route("/get_employee_data/<date_value:string>", methods=['GET'])
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def getData(request, date_value):
+    if date_value == "now": date_value = datetime.datetime.today().strftime ('%Y-%m')
+    items_count, sell_number = 0, 0
+    sell_item_type = {}
+    sell_type_list = ['开单']
+
+    employee_analysis_result = {}
+    hairdresser_sell_number = {}
+    assistant_sell_number = {}
+    if "-" not in date_value:
+        temp = 'select * from sell_item_list where YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from sell_item_list where YEAR(created_time)="%s" and month(created_time)="%s"' % tuple(date_value.split('-'))
+
+    sell_item_list = await request.app.mysql.query_select(temp)
+    for raw_id, value in enumerate(sell_item_list):
+        n_id, item_number, hairdresser, assistant, item_type, money, pay_type, fellow, comment, created_time = value
+        items_count += 1
+        item_type = ','.join(sorted(item_type.split(',')))
+        sell_item_type.setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
+
+        if hairdresser.strip() == "":
+            hairdresser_sell_number.setdefault("无发型师", {"value": 0, "name": "无发型师"})["value"] += int(money)
+        else:
+            hairdresser_sell_number.setdefault(hairdresser, {"value": 0, "name": hairdresser})["value"] += int(money)
+            employee_analysis_result.setdefault("发型师：%s 服务类别" % hairdresser, {})
+            employee_analysis_result["发型师：%s 服务类别" % hairdresser].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
+        if assistant.strip() == "":
+            assistant_sell_number.setdefault("无助理", {"value": 0, "name": "无助理"})["value"] += int(money)
+        else:
+            assistant_sell_number.setdefault(assistant, {"value": 0, "name": assistant})["value"] += int(money)
+            employee_analysis_result.setdefault("助理：%s 服务类别" % assistant, {})
+            employee_analysis_result["助理：%s 服务类别" % assistant].setdefault(item_type, {"value": 0, "name": item_type})["value"] += int(money)
+        
+    if "-" not in date_value:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s"' % date_value
+    else:
+        temp = 'select * from cash_flow where YEAR(created_time)="%s" and month(created_time)="%s"' % tuple(date_value.split('-'))
+    cash_flow = await request.app.mysql.query_select(temp)
+    for raw_id, value in enumerate(cash_flow):
+        n_id, sell_item_number, money, flow_direction, reason, comment, created_time = value
+        if "入账" in flow_direction:
+            if reason in sell_type_list:
+                sell_number += int(money)
+    temp_employee_analysis_result = []
+
+    for key, value in employee_analysis_result.items():
+        temp_employee_analysis_result.append({"name": key, "content": value.values()})
+    temp_employee_analysis_result.sort()
+    
+    return response.json({
+        "data": {
+            "items_count": items_count,
+            "sell_number": sell_number,
+            "sell_item_type": list(sell_item_type.values()),
+            "hairdresser_sell_number": list(hairdresser_sell_number.values()),
+            "assistant_sell_number": list(assistant_sell_number.values()),
+            "employee_analysis_result": temp_employee_analysis_result
+
         },
         "status": "success"
     })
