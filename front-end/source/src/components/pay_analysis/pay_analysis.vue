@@ -76,7 +76,7 @@ export default {
         },
         {
           title: '全部消费总次数',
-          key: 'entire_sum_count',
+          key: 'entire_items_count',
           sortable: 'custom'
         },
         {
