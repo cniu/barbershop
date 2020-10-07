@@ -256,3 +256,57 @@ async def getData(request, date_value):
         },
         "status": "success"
     })
+
+@app.route("/get_fellow_analysis", methods=['POST'])
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def getData(request):
+    try:
+        data = request.json if request.json is not None else {}
+        args = request.args if request.args is not None else {}
+
+        search = data.get('search', '')
+        page = int(args.get('page', 1))
+        page_size = int(args.get('page_size', 20))
+        order_by = args.get('order_key', 'updated_time')
+        order = args.get('order', 'desc')
+        if order.lower() not in ['desc', 'asc']:
+            order = 'desc'
+
+        search_sql = "where CONCAT(IFNULL(`phone_number`,''),IFNULL(`fellow_name`,''),IFNULL(`updated_time`,'')) LIKE '%%%s%%'" % search
+
+        res_total_count = await request.app.mysql.query_select('select count(*) from fellow_analysis_result %s' % (search_sql))
+        total_count = int(res_total_count[0][0])
+        if total_count <= (page - 1) * page_size:
+            page = 1
+
+        page_sql = "limit %s, %s" % ((page - 1) * page_size, page_size)
+
+        result_list = []
+        fellow_analysis_result = await request.app.mysql.query_select('select * from fellow_analysis_result %s order by %s %s %s' % (search_sql, order_by, order, page_sql))
+        for raw_id, value in enumerate(fellow_analysis_result):
+            n_id, phone_number, fellow_name, pre_sum_number, current_sum_number, current_card_type, entire_sum_number, entire_items_count, entire_average_price, updated_time = value
+            fellow_grade = "默认"
+
+            result_list.append({
+                "raw_id": raw_id + 1,
+                "fellow_name": fellow_name,
+                "phone_number": phone_number,
+                "pre_sum_number": pre_sum_number,
+                "current_sum_number": current_sum_number,
+                "current_card_type": current_card_type,
+                "entire_sum_number": entire_sum_number,
+                "entire_items_count": entire_items_count,
+                "entire_average_price": entire_average_price,
+                "fellow_grade": fellow_grade,
+                "updated_time": str(updated_time),
+            })
+    except Exception as e:
+        return response.json({
+            "data": [],
+            "page": 1,
+            "total_count": 0,
+            "status": "failed",
+            "message": "获取失败，错误信息为%s" % str(e)
+        })
+
+    return response.json({"data": result_list, "page": page, "total_count": int(total_count), "status": "success"})

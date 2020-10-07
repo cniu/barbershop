@@ -67,10 +67,19 @@ export default new Router({
 				path: '/cash_flow',
 				name: 'cash-flow',
 				meta: {
-				  title: '财务分析',
+				  title: '资金流',
 				  hideInMenu: true
 				},
 				component: () => import('@/components/cash-flow')
+			},
+			{
+				path: '/pay_analysis',
+				name: 'pay-analysis',
+				meta: {
+				  title: '消费额',
+				  hideInMenu: true
+				},
+				component: () => import('@/components/pay_analysis')
 			},
 			{
 				path: '/fellow/list',
